@@ -11,12 +11,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger UI와 API 문서 경로에 대한 인증 없이 접근 허용
-                .anyRequest().authenticated()  // 다른 모든 요청은 인증 필요
-                .and()
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/swagger-ui/**", "/v3/api-docs/**"));  // Swagger UI와 API 문서 경로에 대해서만 CSRF 비활성화
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll() // ✅ 모든 요청 허용
+                )
+                .csrf(csrf -> csrf.disable()) // ✅ CSRF 비활성화 (필요한 경우에만)
+                .formLogin(form -> form.disable()) // ✅ 로그인 폼 비활성화
+                .httpBasic(basic -> basic.disable()); // ✅ HTTP Basic 인증도 비활성화
 
         return http.build();
     }
