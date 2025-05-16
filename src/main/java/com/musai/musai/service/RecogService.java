@@ -1,5 +1,6 @@
 package com.musai.musai.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musai.musai.dto.RecogRequestDTO;
 import com.musai.musai.dto.RecogResponseDTO;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,7 +18,7 @@ public class RecogService {
     // FastAPI 서버 주소
     private static final String FAST_API_URL = "http://localhost:8000/web-detection/";
 
-    public Map<String, Object> sendImageToAiServer(MultipartFile file) throws Exception {
+    public RecogResponseDTO sendImageToAiServer(MultipartFile file) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
 
         // 이미지 파일을 ByteArrayResource로 변환
@@ -44,6 +45,9 @@ public class RecogService {
                 Map.class
         );
 
-        return response.getBody();  // JSON 그대로 반환
+        ObjectMapper mapper = new ObjectMapper();
+        RecogResponseDTO result = mapper.convertValue(response.getBody(), RecogResponseDTO.class);
+
+        return result;
     }
 }
