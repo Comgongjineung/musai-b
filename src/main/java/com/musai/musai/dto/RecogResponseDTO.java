@@ -25,6 +25,9 @@ public class RecogResponseDTO {
     @NoArgsConstructor
     @Schema(description = "Gemini AI의 예술 작품 설명")
     public static class GeminiResult {
+        
+        @Schema(description = "작품 이미지", example = "이미지 링크")
+        private String image_url;
 
         @Schema(description = "작품 제목", example = "모나리자 (La Gioconda)")
         private String title;
@@ -40,5 +43,8 @@ public class RecogResponseDTO {
 
         @Schema(description = "작품 설명", example = "르네상스 회화의 정점을 보여주는 대표적인 작품...")
         private String description;
+
+        @Schema(description = "에러 메시지", example = "서버 연결 오류")
+        private String error;
     }
 }

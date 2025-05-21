@@ -16,7 +16,9 @@ import java.util.Map;
 @Service
 public class RecogService {
     // FastAPI 서버 주소
-    private static final String FAST_API_URL = "http://localhost:8000/web-detection/";
+    private static final String FAST_API_URL = "http://musai-ai:8000/web-detection/";
+    private static final String LOCAL_API_URL = "http://localhost:8000/web-detection/";
+
 
     public RecogResponseDTO sendImageToAiServer(MultipartFile file) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
