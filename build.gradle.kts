@@ -37,6 +37,8 @@ dependencies {
 //	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 	implementation ("org.springframework.boot:spring-boot-starter-data-mongodb")
+	implementation("javazoom:jlayer:1.0.1")
+	implementation("org.jaudiotagger:jaudiotagger:2.0.1")
 	compileOnly("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.projectlombok:lombok")
