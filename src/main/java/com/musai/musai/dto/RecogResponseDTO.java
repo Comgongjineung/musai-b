@@ -25,7 +25,7 @@ public class RecogResponseDTO {
     @NoArgsConstructor
     @Schema(description = "Gemini AI의 예술 작품 설명")
     public static class GeminiResult {
-        
+
         @Schema(description = "작품 이미지", example = "이미지 링크")
         private String image_url;
 
@@ -47,4 +47,7 @@ public class RecogResponseDTO {
         @Schema(description = "에러 메시지", example = "서버 연결 오류")
         private String error;
     }
+
+    @Schema(description = "이미지 링크", example = "이미지 링크")
+    private String original_image_url;
 }
