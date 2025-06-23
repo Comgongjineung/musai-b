@@ -42,7 +42,7 @@ public class RecogService {
 
         // FastAPI 서버로 POST 요청
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                LOCAL_API_URL,
+                FAST_API_URL,
                 requestEntity,
                 Map.class
         );
