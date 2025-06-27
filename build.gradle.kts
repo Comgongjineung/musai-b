@@ -29,7 +29,6 @@ extra["tanzuScgExtensionsVersion"] = "1.0.0"
 dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter")
 //	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -46,6 +45,8 @@ dependencies {
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation ("org.apache.httpcomponents:httpclient:4.5.13")
+	implementation ("commons-codec:commons-codec:1.15")
 }
 
 //dependencyManagement {
