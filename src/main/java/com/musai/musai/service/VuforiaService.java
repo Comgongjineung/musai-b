@@ -3,6 +3,7 @@ package com.musai.musai.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -45,11 +46,11 @@ public class VuforiaService {
 
         String jsonBody = new ObjectMapper().writeValueAsString(requestBody);
 
-        // JSON 바이트 배열로 직접 MD5 계산 (UTF-8 인코딩)
+        // JSON 바이트 배열로 직접 MD5 계산 (UTF-8 인코딩) - 16진수로 변환
         byte[] jsonBytes = jsonBody.getBytes(StandardCharsets.UTF_8);
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(jsonBytes);
-        String contentMD5 = Base64.getEncoder().encodeToString(md.digest());
+        String contentMD5 = bytesToHex(md.digest()); // 16진수 MD5 해시
 
         String contentType = "application/json";
         String date = getRFC1123Date();
@@ -57,7 +58,7 @@ public class VuforiaService {
         // 로그 출력
         System.out.println("JSON Body: " + jsonBody);
         System.out.println("JSON Bytes Length: " + jsonBytes.length);
-        System.out.println("Content-MD5: " + contentMD5);
+        System.out.println("Content-MD5 (hex): " + contentMD5);
         System.out.println("Date header value: " + date);
 
         // String to Sign 구성 (POST 요청의 경우)
@@ -145,28 +146,36 @@ public class VuforiaService {
 
         String date = getRFC1123Date();
         
-        // GET 요청의 경우 Content-MD5와 Content-Type이 비어있음
-        String stringToSign = "GET\n\n\n" + date + "\n/targets";
+        // GET 요청의 경우 빈 문자열의 MD5 해시 사용
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update("".getBytes(StandardCharsets.UTF_8));
+        String contentMD5 = bytesToHex(md.digest());
+        
+        String stringToSign = "GET\n" +
+                contentMD5 + "\n" +
+                "\n" + // 빈 Content-Type
+                date + "\n" +
+                "/targets";
         
         String signature = getHmacSHA1(stringToSign, secretKey);
         String authHeader = "VWS " + accessKey + ":" + signature;
 
-        HttpPost post = new HttpPost(VUFORIA_URL + "/targets");
-        post.setHeader("Authorization", authHeader);
-        post.setHeader("Date", date);
-        post.setHeader("Content-Type", "application/json");
+        HttpGet get = new HttpGet(VUFORIA_URL + "/targets");
+        get.setHeader("Authorization", authHeader);
+        get.setHeader("Date", date);
 
         System.out.println("=== Test Connection ===");
         System.out.println("Access Key: " + accessKey);
         System.out.println("Secret Key: " + secretKey.substring(0, 8) + "...");
         System.out.println("Date: " + date);
+        System.out.println("Content-MD5 (empty string): " + contentMD5);
         System.out.println("String to Sign: " + stringToSign);
         System.out.println("Signature: " + signature);
         System.out.println("Authorization: " + authHeader);
         System.out.println("======================");
 
         try (CloseableHttpClient client = HttpClients.createDefault();
-             CloseableHttpResponse response = client.execute(post)) {
+             CloseableHttpResponse response = client.execute(get)) {
 
             String responseBody = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
@@ -192,5 +201,13 @@ public class VuforiaService {
         System.out.println("==========================");
 
         return "API 키 길이 - Access: " + accessKey.length() + ", Secret: " + secretKey.length();
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 }
