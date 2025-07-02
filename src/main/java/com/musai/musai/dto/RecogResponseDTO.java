@@ -26,6 +26,9 @@ public class RecogResponseDTO {
     @Schema(description = "Gemini AI의 예술 작품 설명")
     public static class GeminiResult {
 
+        @Schema(description = "이미지", example = "이미지 링크")
+        private String image_url;
+
         @Schema(description = "작품 제목", example = "모나리자 (La Gioconda)")
         private String title;
 
@@ -50,4 +53,7 @@ public class RecogResponseDTO {
 
     @Schema(description = "Vuforia 등록 결과", example = "success")
     private String vuforia_status; // Optional 필드
+
+    @Schema(description = "설명 난이도", example = "중")
+    private String level;
 }

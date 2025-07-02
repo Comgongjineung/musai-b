@@ -29,10 +29,9 @@ public class RecogService {
     private static final String LOCAL_API_URL = "http://localhost:8000/web-detection/";
     private final VuforiaService vuforiaService;
 
-    public RecogResponseDTO sendImageToAiServer(MultipartFile file) throws Exception {
+    public RecogResponseDTO sendImageToAiServer(MultipartFile file, String level, String bestGuess) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
 
-        // 이미지 파일을 ByteArrayResource로 변환
         ByteArrayResource imageAsResource = new ByteArrayResource(file.getBytes()) {
             @Override
             public String getFilename() {
@@ -40,34 +39,33 @@ public class RecogService {
             }
         };
 
-        // multipart/form-data 구성
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", imageAsResource);
+        body.add("best_guess", bestGuess != null ? bestGuess : "");
+        body.add("level", level != null ? level : "중");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        // FastAPI 서버로 POST 요청
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                FAST_API_URL,
+                LOCAL_API_URL,
                 requestEntity,
                 Map.class
         );
 
         ObjectMapper mapper = new ObjectMapper();
         RecogResponseDTO result = mapper.convertValue(response.getBody(), RecogResponseDTO.class);
-
+        result.setLevel(level); // 선택한 난이도 저장
         return result;
     }
 
     // RecogService.java (혹은 새로운 Service에서 호출)
-    public void analyzeAndRegisterToVuforia(MultipartFile file) throws Exception {
-        RecogResponseDTO responseDTO = sendImageToAiServer(file); // AI 분석 요청
+    public void analyzeAndRegisterToVuforia(MultipartFile file, String level, String bestGuess) throws Exception {
+        RecogResponseDTO responseDTO = sendImageToAiServer(file, level, bestGuess);
 
         String imageUrl = responseDTO.getOriginal_image_url();
-
         // ✅ 여기에서 리사이즈+압축
         byte[] imageBytes = resizeAndCompressImage(new URL(imageUrl));
 
