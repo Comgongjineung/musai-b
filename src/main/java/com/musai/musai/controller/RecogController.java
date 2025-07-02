@@ -61,6 +61,34 @@ public class RecogController {
             }
     )
 
+    @PostMapping(value = "/analyzeAndRegister", consumes = "multipart/form-data")
+    public ResponseEntity<?> analyzeAndRegisterImage(@RequestParam("file") MultipartFile file) {
+        try {
+            // 1. AI 분석 결과 먼저 받기
+            RecogResponseDTO responseDTO = recogService.sendImageToAiServer(file);
+
+            // 2. Vuforia 등록
+            try {
+                recogService.registerImageToVuforia(responseDTO);
+                responseDTO.setVuforia_status("success");
+            } catch (Exception ve) {
+                responseDTO.setVuforia_status("fail: " + ve.getMessage());
+            }
+
+            // 3. JSON 응답: 분석 결과 + Vuforia 등록 여부 포함
+            return ResponseEntity.ok(responseDTO);
+
+        } catch (Exception e) {
+            RecogErrorDTO errorResponse = new RecogErrorDTO(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                    "AI 분석 실패 또는 Vuforia 처리 실패: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
     @PostMapping(value = "/analyze", consumes = "multipart/form-data")
     public ResponseEntity<?> analyzeImage(@RequestParam("file") MultipartFile file) {
         try {
