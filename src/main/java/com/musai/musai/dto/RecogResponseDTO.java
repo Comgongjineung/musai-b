@@ -1,5 +1,6 @@
 package com.musai.musai.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,10 +25,8 @@ public class RecogResponseDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     @Schema(description = "Gemini AI의 예술 작품 설명")
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class GeminiResult {
-
-        @Schema(description = "이미지", example = "이미지 링크")
-        private String image_url;
 
         @Schema(description = "작품 제목", example = "모나리자 (La Gioconda)")
         private String title;
