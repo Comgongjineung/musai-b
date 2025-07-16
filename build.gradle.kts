@@ -28,14 +28,13 @@ extra["tanzuScgExtensionsVersion"] = "1.0.0"
 
 dependencies {
 	implementation ("org.springframework.boot:spring-boot-starter")
-//	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 //	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 	implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-	implementation ("org.springframework.boot:spring-boot-starter-data-mongodb")
 	implementation("javazoom:jlayer:1.0.1")
 	implementation("org.jaudiotagger:jaudiotagger:2.0.1")
 	compileOnly("org.projectlombok:lombok")
@@ -47,6 +46,7 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation ("org.apache.httpcomponents:httpclient:4.5.13")
 	implementation ("commons-codec:commons-codec:1.15")
+	implementation("mysql:mysql-connector-java:8.0.33")
 }
 
 //dependencyManagement {
