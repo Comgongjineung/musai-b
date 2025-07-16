@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Configuration
 @RequiredArgsConstructor
@@ -18,13 +20,12 @@ public class SecurityConfig {
         http
                 // ✅ 요청 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/css/**", "/js/**", "/oauth2/**", "/error").permitAll()
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 )
 
                 // ✅ OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login") // 로그인 페이지 경로
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOauth2UserService) // ✅ 커스텀 OAuth2 서비스 연결
                         )
@@ -40,5 +41,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable());
 
         return http.build();
+    }
+}
+
+@Controller
+public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
+    @RequestMapping("/error")
+    public String handleError() {
+        return "에러가 발생했습니다. 관리자에게 문의하세요.";
     }
 }
