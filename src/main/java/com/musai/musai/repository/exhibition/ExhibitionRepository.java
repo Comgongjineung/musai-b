@@ -4,6 +4,10 @@ import com.musai.musai.entity.exhibition.Exhibition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+
 @Repository
 public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
+    void deleteByEndDateBefore(LocalDate today);
+    boolean existsByTitleAndPeriod(String title, String period); // 중복 저장 방지용
 }
