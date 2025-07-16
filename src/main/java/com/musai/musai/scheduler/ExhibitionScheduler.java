@@ -13,6 +13,6 @@ public class ExhibitionScheduler {
 
     @Scheduled(cron = "0 0 12 * * *", zone = "Asia/Seoul")
     public void updateExhibitionData() {
-        service.syncExhibitions();
+//        service.syncExhibitions();
     }
 }
