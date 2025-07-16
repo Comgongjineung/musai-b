@@ -1,7 +1,7 @@
 package com.musai.musai;
 
-import com.musai.musai.entity.User;
-import com.musai.musai.repository.UserRepository;
+import com.musai.musai.entity.user.User;
+import com.musai.musai.repository.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

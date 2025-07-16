@@ -1,4 +1,4 @@
-package com.musai.musai.repository;
+package com.musai.musai.repository.exhibition;
 
 import com.musai.musai.entity.exhibition.Exhibition;
 import org.springframework.data.jpa.repository.JpaRepository;

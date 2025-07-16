@@ -1,8 +1,8 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.exhibition;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.musai.musai.service.ExhibitionApiService;
+import com.musai.musai.service.exhibition.ExhibitionApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
