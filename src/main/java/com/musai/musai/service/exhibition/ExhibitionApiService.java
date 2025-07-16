@@ -1,4 +1,4 @@
-package com.musai.musai.service;
+package com.musai.musai.service.exhibition;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

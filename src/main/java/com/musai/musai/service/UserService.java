@@ -1,6 +1,6 @@
 package com.musai.musai.service;
 
-import com.musai.musai.repository.UserRepository;
+import com.musai.musai.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

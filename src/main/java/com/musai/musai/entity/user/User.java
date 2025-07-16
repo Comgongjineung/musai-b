@@ -1,4 +1,4 @@
-package com.musai.musai.entity;
+package com.musai.musai.entity.user;
 
 import lombok.Getter;
 import lombok.Setter;

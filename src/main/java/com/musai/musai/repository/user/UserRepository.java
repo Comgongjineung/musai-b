@@ -1,6 +1,6 @@
-package com.musai.musai.repository;
+package com.musai.musai.repository.user;
 
-import com.musai.musai.entity.User;
+import com.musai.musai.entity.user.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface UserRepository extends MongoRepository<User, String> {
