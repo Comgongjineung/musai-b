@@ -1,6 +1,6 @@
 package com.musai.musai.scheduler;
 
-import com.musai.musai.service.ExhibitionService;
+import com.musai.musai.service.exhibition.ExhibitionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
