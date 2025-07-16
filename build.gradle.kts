@@ -47,6 +47,9 @@ dependencies {
 	implementation ("org.apache.httpcomponents:httpclient:4.5.13")
 	implementation ("commons-codec:commons-codec:1.15")
 	implementation("mysql:mysql-connector-java:8.0.33")
+
+	implementation ("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation ("org.springframework.boot:spring-boot-starter-security")
 }
 
 //dependencyManagement {
