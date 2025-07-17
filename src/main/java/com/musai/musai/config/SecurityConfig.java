@@ -43,11 +43,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-@Controller
-public class ErrorController implements org.springframework.boot.web.servlet.error.ErrorController {
-    @RequestMapping("/error")
-    public String handleError() {
-        return "에러가 발생했습니다. 관리자에게 문의하세요.";
-    }
-}
