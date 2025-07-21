@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -16,6 +17,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/tts")
 @CrossOrigin(origins = "*")
+@SecurityRequirement(name = "bearerAuth")
 public class TtsController {
 
     private final TtsService ttsService;
