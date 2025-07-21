@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class ExhibitionApiParser {
 
-    @Value("#{openapi.key}")
+    @Value("${openapi.key}")
     private String apiKey;
 
     public List<ExhibitionDTO> fetchExhibitions() throws IOException {
@@ -23,8 +23,6 @@ public class ExhibitionApiParser {
         String response = new RestTemplate().getForObject(apiUrl, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response);
-        JsonNode items = root.path("body").path("items").path("item");
 
         List<ExhibitionDTO> result = new ArrayList<>();
 

@@ -29,12 +29,15 @@ public class JwtTokenProvider {
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7) : null;
+        return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7).trim() : null;
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey.getBytes())  // 중요: getBytes()로 바이트 키 지정
+                    .build()
+                    .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -42,10 +45,13 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-        String userId = claims.getSubject();
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey.getBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-        // 필요한 경우 권한 부여도 여기에 추가
+        String userId = claims.getSubject();
         return new UsernamePasswordAuthenticationToken(userId, "", Collections.emptyList());
     }
 
