@@ -28,50 +28,18 @@ public class ExhibitionService {
                 .orElseThrow(() -> new IllegalArgumentException("전시회 ID " + id + "가 존재하지 않습니다."));
     }
 
-//    @Transactional
-//    public void syncExhibitions() {
-//        // 1. 지난 전시 삭제
-//        exhibitionRepository.deleteByEndDateBefore(LocalDate.now());
-//
-//        // 2. OpenAPI에서 전시 가져오기
-//        List<ExhibitionDTO> dtoList = parser.fetchExhibitions();
-//
-//        for (ExhibitionDTO dto : dtoList) {
-//            // 3. 중복 체크
-//            if (exhibitionRepository.existsByTitleAndPeriod(dto.getTitle(), dto.getPeriod())) continue;
-//
-//            // 4. 날짜 파싱
-//            LocalDate startDate = null;
-//            LocalDate endDate = null;
-//            try {
-//                String[] dates = dto.getPeriod().split("~");
-//                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
-//                startDate = LocalDate.parse(dates[0].trim(), formatter);
-//                endDate = LocalDate.parse(dates[1].trim(), formatter);
-//            } catch (Exception e) {
-//                // 파싱 실패 시 패스
-//                continue;
-//            }
-//
-//            // 5. 저장
-//            Exhibition entity = Exhibition.builder()
-//                    .title(dto.getTitle())
-//                    .cntcInsttNm(dto.getCntc_instt_nm())
-//                    .description(dto.getDescription())
-//                    .imageObject(dto.getImage_object())
-//                    .genre(dto.getGenre())
-//                    .url(dto.getUrl())
-//                    .duration(dto.getDuration())
-//                    .period(dto.getPeriod())
-//                    .eventPeriod(dto.getEvent_period())
-//                    .tableOfContents(dto.getTable_of_contents())
-//                    .eventSite(dto.getEvent_site())
-//                    .contributor(dto.getContributor())
-//                    .startDate(startDate)
-//                    .endDate(endDate)
-//                    .build();
-//
-//            exhibitionRepository.save(entity);
-//        }
-//    }
+    //새로운 전시회 추가
+    public void newExhibitions(List<ExhibitionDTO> exhibitions) {
+        for (ExhibitionDTO dto : exhibitions) {
+            if (!exhibitionRepository.existsByExhiId(dto.getExhi_id())) {
+
+            }
+        }
+    }
+
+    // 종료된 전시회 삭제
+    public void deleteEndedExhibitions() {
+        LocalDate today = LocalDate.now();
+        exhibitionRepository.deleteByEndDateBefore(today.toString());
+    }
 }
