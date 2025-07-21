@@ -6,6 +6,7 @@ import com.musai.musai.entity.exhibition.Exhibition;
 import com.musai.musai.service.exhibition.ExhibitionService;
 import com.musai.musai.service.exhibition.ExhibitionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/exhibition")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class ExhibitionController {
     private final ExhibitionService exhibitionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -31,15 +33,5 @@ public class ExhibitionController {
     public Exhibition getExhibitionById(@PathVariable Long id) {
         return exhibitionService.getExhibitionById(id);
     }
-
-//    @GetMapping("/api/raw")
-//    public String getRawApi(@RequestParam(defaultValue = "1") int pageNo,
-//                            @RequestParam(defaultValue = "10") int numOfRows) throws Exception {
-//        String rawJson = exhibitionApiService.getRawApiData(pageNo, numOfRows);
-//        Object json = objectMapper.readValue(rawJson, Object.class);
-//        ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
-//        return writer.writeValueAsString(json);
-//    }
-
 
 }
