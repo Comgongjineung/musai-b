@@ -17,39 +17,27 @@ public class Exhibition {
     @Column(name = "exhi_id")
     private Long exhiId;
 
-    @Column(length = 200, nullable = false)
+    @Column(length = 200)
     private String title;
 
-    @Column(length = 100)
-    private String host;
-
-    @Column(length = 100)
-    private String organization;
-
-    @Column(length = 100)
-    private String genre;
-
-    @Column(length = 100)
-    private String location;
+    @Column(columnDefinition = "TEXT")
+    private String startDate;
 
     @Column(columnDefinition = "TEXT")
-    private String guide;
+    private String endDate;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(length = 255)
-    private String duration;
-
-    @Column(length = 255)
-    private String period;
-
-    @Column(length = 255)
-    private String time;
+    private String place;
 
     @Column(columnDefinition = "TEXT")
-    private String imageUrl;
+    private String realmName;
 
     @Column(columnDefinition = "TEXT")
-    private String pageUrl;
+    private String thumbnail;
+
+    @Column(columnDefinition = "TEXT")
+    private String gpsX;
+
+    @Column(columnDefinition = "TEXT")
+    private String gpsY;
 }

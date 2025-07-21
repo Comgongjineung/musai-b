@@ -12,6 +12,7 @@ import java.util.List;
 
 @Component
 public class ExhibitionApiParser {
+
     public List<ExhibitionDTO> fetchExhibitions() throws IOException {
         String apiUrl = "https://api.kcisa.kr/openapi/API_CCA_145/request";
         String response = new RestTemplate().getForObject(apiUrl, String.class);
@@ -22,22 +23,29 @@ public class ExhibitionApiParser {
 
         List<ExhibitionDTO> result = new ArrayList<>();
 
-        for (JsonNode node : root.get("data")) {
+        for (JsonNode node : items) {
             ExhibitionDTO dto = new ExhibitionDTO();
-            dto.setTitle(node.get("TITLE").asText());
-            dto.setDescription(node.get("DESCRIPTION").asText());
-            dto.setContributor(node.get("CONTRIBUTOR").asText());
-            dto.setGenre(node.get("GENRE").asText());
-            dto.setDuration(node.get("DURATION").asText());
-            dto.setPeriod(node.get("PERIOD").asText());
-            dto.setUrl(node.get("URL").asText());
-            dto.setEvent_period(node.get("EVENT_PERIOD").asText());
-            dto.setImage_object(node.get("IMAGE_OBJECT").asText());
-            dto.setTable_of_contents(node.get("TABLE_OF_CONTENTS").asText());
-            dto.setCntc_instt_nm(node.get("CNTC_INSTT_NM").asText());
+
+            dto.setTitle(getSafeText(node, "TITLE"));
+            // 기간 관련 데이터가 JSON에 어떻게 있는지 정확히 확인 필요
+            // 예시로 "START_DATE", "END_DATE" 키가 없으면 "PERIOD" 또는 "EVENT_PERIOD"로 파싱해야 함
+//            dto.setPeriod(getSafeText(node, "PERIOD")); // 임시 저장
+//            dto.setEvent_period(getSafeText(node, "EVENT_PERIOD")); // 임시 저장
+//            dto.setEvent_site(getSafeText(node, "EVENT_SITE"));
+//            dto.setContributor(getSafeText(node, "CONTRIBUTOR")); // realmName으로 활용 가능
+//            dto.setImage_object(getSafeText(node, "IMAGE_OBJECT"));
+
+            // GPS는 API에 없으면 null 처리
+            dto.setGpsX(null);
+            dto.setGpsY(null);
 
             result.add(dto);
         }
         return result;
+    }
+
+    private String getSafeText(JsonNode node, String key) {
+        JsonNode value = node.get(key);
+        return value != null ? value.asText() : null;
     }
 }
