@@ -1,0 +1,80 @@
+package com.musai.musai.controller.user;
+
+import com.musai.musai.dto.RecogErrorDTO;
+import com.musai.musai.dto.RecogResponseDTO;
+import com.musai.musai.dto.user.UserDTO;
+import com.musai.musai.dto.user.UserErrorDTO;
+import com.musai.musai.service.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+@RequestMapping("/user")
+@RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
+public class UserController {
+
+    private final UserService userService;
+
+    //회원 정보 조회 api
+    @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.",
+    responses = {
+        @ApiResponse(
+                responseCode = "200",
+                description = "분석 성공",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = UserDTO.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "500",
+                description = "서버 오류",
+                content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = UserErrorDTO.class)
+                )
+        )
+    })
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDTO> readUser(@PathVariable Long userId) {
+        UserDTO user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
+    }
+
+    //회원 정보 수정 api
+    @Operation(summary = "회원 정보 수정", description = "회원 정보(닉네임, 프로필 사진)를 수정합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "분석 성공",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "서버 오류",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserErrorDTO.class)
+                            )
+                    )
+            })
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDTO> updateUser (
+            @PathVariable Long userId,
+            @RequestBody UserDTO userDTO) {
+        UserDTO updateUser = userService.updateUser(userId, userDTO);
+        return ResponseEntity.ok(updateUser);
+    }
+}
