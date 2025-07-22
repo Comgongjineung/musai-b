@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "exhibition")
+@Table(name = "exhibition", uniqueConstraints = {@UniqueConstraint(columnNames = "seqnum")})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,4 +40,7 @@ public class Exhibition {
 
     @Column(columnDefinition = "TEXT")
     private String gpsY;
+
+    @Column(nullable = false, unique = true)
+    private Integer seqnum;
 }
