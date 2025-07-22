@@ -1,32 +1,35 @@
 package com.musai.musai.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.musai.musai.dto.exhibition.ExhibitionDTO;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Slf4j
+@Component
 public class ExhibitionApiParser {
 
-    @Value("${openapi.key}")
-    private String apiKey;
-
-    public List<ExhibitionDTO> fetchExhibitions() throws IOException {
-        String apiUrl = "apis.data.go.kr/B553457/cultureinfo";
-        String response = new RestTemplate().getForObject(apiUrl, String.class);
-
-        ObjectMapper mapper = new ObjectMapper();
-
+    /**
+     * XML 문자열을 ExhibitionDTO 리스트로 파싱
+     */
+    public List<ExhibitionDTO> parse(String xmlData) {
         List<ExhibitionDTO> result = new ArrayList<>();
+        try {
+            XmlMapper xmlMapper = new XmlMapper();
 
+            // API 응답 전체를 ExhibitionApiResponse로 매핑
+            ExhibitionApiResponse response = xmlMapper.readValue(xmlData, ExhibitionApiResponse.class);
 
+            if (response.getItems() != null) {
+                result = response.getItems();
+            }
+        } catch (IOException e) {
+            log.error("XML Parsing Error", e);
+        }
         return result;
     }
 }

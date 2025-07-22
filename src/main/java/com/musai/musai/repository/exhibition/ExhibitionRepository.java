@@ -10,4 +10,6 @@ import java.time.LocalDate;
 public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     boolean existsByExhiId(Long exhiId);
     void deleteByEndDateBefore(String date);
+
+    boolean existsBySeqnum(Integer seqnum);
 }
