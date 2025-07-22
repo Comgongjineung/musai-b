@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 
@@ -26,6 +28,11 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
+    @PostConstruct
+    public void checkSecretKey() {
+        System.out.println("secretKey length: " + secretKey.length());
+        System.out.println("secretKey bytes: " + secretKey.getBytes(StandardCharsets.UTF_8).length);
+    }
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
@@ -34,10 +41,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey.getBytes())  // 중요: getBytes()로 바이트 키 지정
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parser().setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8)).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -45,12 +49,7 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey.getBytes())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
+        Claims claims = Jwts.parser().setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8)).parseClaimsJws(token).getBody();
         String userId = claims.getSubject();
         return new UsernamePasswordAuthenticationToken(userId, "", Collections.emptyList());
     }
@@ -65,13 +64,13 @@ public class JwtTokenProvider {
                 .claim("nickname", user.getNickname())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(secretKey.getBytes())
+                .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

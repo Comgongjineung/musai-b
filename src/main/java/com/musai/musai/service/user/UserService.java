@@ -1,6 +1,7 @@
 package com.musai.musai.service.user;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.musai.musai.dto.user.UserDTO;
 import com.musai.musai.entity.user.User;
 import com.musai.musai.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,32 @@ public class UserService {
                         .build()));
     }
 
-    public User getById(Long userId) {
-        return userRepository.findById(userId)
+    public UserDTO getUserById(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .build();
+    }
+
+    public UserDTO updateUser(Long userId, UserDTO userDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        //업데이트 할 정보
+        user.setNickname(userDTO.getNickname());
+        user.setProfileImage(userDTO.getProfileImage());
+        userRepository.save(user);
+
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .build();
     }
 }
