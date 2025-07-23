@@ -38,7 +38,7 @@ public class ExhibitionService {
     private final int FILTER_END_DATE = 20250721;
 
     private static final String API_URL_TEMPLATE =
-            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
+            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&keyword=전시&serviceTp=A&to=%s";
 
     @Bean
     public RestTemplate restTemplate() {
@@ -140,26 +140,24 @@ public class ExhibitionService {
     // ✅ DB 저장
     @Transactional
     private void processAndSave(List<ExhibitionDTO> dataList) {
+        log.info("Processing {} items", dataList.size());
+
         for (ExhibitionDTO dto : dataList) {
             try {
-                int endDateInt = Integer.parseInt(dto.getEndDate());
-                if (endDateInt >= FILTER_END_DATE) {
-                    Integer seqnum = (dto.getExhi_id() != null) ? dto.getExhi_id().intValue() : null;
+                Integer seqnum = (dto.getExhi_id() != null) ? dto.getExhi_id().intValue() : null;
 
-                    if (seqnum != null && !exhibitionRepository.existsBySeqnum(seqnum)) {
-                        Exhibition entity = dto.toEntity();
-                        entity.setSeqnum(seqnum);
-                        exhibitionRepository.save(entity);
-                        log.info("✅ Saved exhibition: seqnum={}, title={}", seqnum, dto.getTitle());
-                    } else {
-                        log.debug("Duplicate found: seqnum={}", seqnum);
-                    }
+                if (seqnum != null && !exhibitionRepository.existsBySeqnum(seqnum)) {
+                    Exhibition entity = dto.toEntity();
+                    entity.setSeqnum(seqnum);
+                    exhibitionRepository.save(entity);
+                    log.info("Saved exhibition: seqnum={}, title={}", seqnum, dto.getTitle());
                 } else {
-                    log.debug("Filtered out by endDate: {}", dto.getEndDate());
+                    log.debug("Duplicate or null seqnum found: seqnum={}", seqnum);
                 }
-            } catch (NumberFormatException e) {
-                log.error("Invalid endDate format: {}", dto.getEndDate());
+            } catch (Exception e) {
+                log.error("Error saving exhibition: {}", dto, e);
             }
         }
     }
+
 }
