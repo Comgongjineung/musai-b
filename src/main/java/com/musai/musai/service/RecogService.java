@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 public class RecogService {
-    // FastAPI 서버 주소
+    // AI 서버 주소
     private static final String FAST_API_URL = "http://musai-ai:8000/web-detection/";
     private static final String LOCAL_API_URL = "http://localhost:8000/web-detection/";
     private final VuforiaService vuforiaService;
