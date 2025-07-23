@@ -34,4 +34,9 @@ public class ExhibitionController {
         return exhibitionService.getExhibitionById(id);
     }
 
+    @GetMapping("/exhibitions/fetch")
+    public String fetchExhibitions() {
+        exhibitionService.fetchAndSaveAllExhibitions();
+        return "데이터 수집 완료";
+    }
 }

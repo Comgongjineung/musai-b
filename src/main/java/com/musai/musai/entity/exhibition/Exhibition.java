@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "exhibition")
+@Table(name = "exhibition", uniqueConstraints = {@UniqueConstraint(columnNames = "seqnum")})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,41 +15,32 @@ public class Exhibition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "exhi_id")
-    private Long exhiId;
+    private Long exhiId; // DB 자동 증가 PK
 
-    @Column(length = 200, nullable = false)
+    @Column(length = 200)
     private String title;
 
-    @Column(length = 100)
-    private String host;
+    @Column(columnDefinition = "TEXT", name="start_date")
+    private String startDate;
 
-    @Column(length = 100)
-    private String organization;
-
-    @Column(length = 100)
-    private String genre;
-
-    @Column(length = 100)
-    private String location;
+    @Column(columnDefinition = "TEXT", name="end_date")
+    private String endDate;
 
     @Column(columnDefinition = "TEXT")
-    private String guide;
+    private String place;
+
+    @Column(columnDefinition = "TEXT", name="realm_name")
+    private String realmName;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String thumbnail;
 
-    @Column(length = 255)
-    private String duration;
+    @Column(columnDefinition = "TEXT", name="gps_x")
+    private String gpsX;
 
-    @Column(length = 255)
-    private String period;
+    @Column(columnDefinition = "TEXT", name="gps_y")
+    private String gpsY;
 
-    @Column(length = 255)
-    private String time;
-
-    @Column(columnDefinition = "TEXT")
-    private String imageUrl;
-
-    @Column(columnDefinition = "TEXT")
-    private String pageUrl;
+    @Column(nullable = false, unique = true)
+    private Integer seqnum; // ✅ API의 seq 값
 }

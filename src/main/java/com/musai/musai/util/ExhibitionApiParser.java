@@ -1,42 +1,34 @@
 package com.musai.musai.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.musai.musai.dto.exhibition.ExhibitionDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class ExhibitionApiParser {
-    public List<ExhibitionDTO> fetchExhibitions() throws IOException {
-        String apiUrl = "https://api.kcisa.kr/openapi/API_CCA_145/request";
-        String response = new RestTemplate().getForObject(apiUrl, String.class);
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response);
-        JsonNode items = root.path("body").path("items").path("item");
-
+    /**
+     * XML 문자열을 ExhibitionDTO 리스트로 파싱
+     */
+    public List<ExhibitionDTO> parse(String xmlData) {
         List<ExhibitionDTO> result = new ArrayList<>();
+        try {
+            XmlMapper xmlMapper = new XmlMapper();
 
-        for (JsonNode node : root.get("data")) {
-            ExhibitionDTO dto = new ExhibitionDTO();
-            dto.setTitle(node.get("TITLE").asText());
-            dto.setDescription(node.get("DESCRIPTION").asText());
-            dto.setContributor(node.get("CONTRIBUTOR").asText());
-            dto.setGenre(node.get("GENRE").asText());
-            dto.setDuration(node.get("DURATION").asText());
-            dto.setPeriod(node.get("PERIOD").asText());
-            dto.setUrl(node.get("URL").asText());
-            dto.setEvent_period(node.get("EVENT_PERIOD").asText());
-            dto.setImage_object(node.get("IMAGE_OBJECT").asText());
-            dto.setTable_of_contents(node.get("TABLE_OF_CONTENTS").asText());
-            dto.setCntc_instt_nm(node.get("CNTC_INSTT_NM").asText());
+            // API 응답 전체를 ExhibitionApiResponse로 매핑
+            ExhibitionApiResponse response = xmlMapper.readValue(xmlData, ExhibitionApiResponse.class);
 
-            result.add(dto);
+            if (response.getItems() != null) {
+                result = response.getItems();
+            }
+        } catch (IOException e) {
+            log.error("XML Parsing Error", e);
         }
         return result;
     }
