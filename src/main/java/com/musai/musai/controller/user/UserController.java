@@ -1,13 +1,12 @@
 package com.musai.musai.controller.user;
 
-import com.musai.musai.dto.RecogErrorDTO;
-import com.musai.musai.dto.RecogResponseDTO;
+import com.musai.musai.dto.user.SettingDTO;
 import com.musai.musai.dto.user.UserDTO;
 import com.musai.musai.dto.user.UserErrorDTO;
+import com.musai.musai.entity.user.DefaultDifficulty;
 import com.musai.musai.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,7 +23,6 @@ public class UserController {
 
     private final UserService userService;
 
-    //회원 정보 조회 api
     @Operation(summary = "회원 정보 조회", description = "회원 정보를 조회합니다.",
     responses = {
         @ApiResponse(
@@ -50,7 +48,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    //회원 정보 수정 api
     @Operation(summary = "회원 정보 수정", description = "회원 정보(닉네임, 프로필 사진)를 수정합니다.",
             responses = {
                     @ApiResponse(
@@ -76,5 +73,22 @@ public class UserController {
             @RequestBody UserDTO userDTO) {
         UserDTO updateUser = userService.updateUser(userId, userDTO);
         return ResponseEntity.ok(updateUser);
+    }
+
+    @Operation(summary = "사용자 설정 조회", description = "사용자 설정 정보를 조회합니다..")
+    @GetMapping("/{userId}/difficulty")
+    public ResponseEntity<SettingDTO> readSetting (
+            @PathVariable Long userId) {
+        SettingDTO setting = userService.getSettingById(userId);
+        return ResponseEntity.ok(setting);
+    }
+
+    @Operation(summary = "난이도별 해설 기본값 수정", description = "난이도별 해설 기본값을 수정합니다.")
+    @PutMapping("/{userId}/difficulty/{level}")
+    public ResponseEntity<SettingDTO> updateLevel (
+            @PathVariable Long userId,
+            @PathVariable DefaultDifficulty level) {
+        SettingDTO updateSet = userService.updateLevel(userId, level);
+        return ResponseEntity.ok(updateSet);
     }
 }
