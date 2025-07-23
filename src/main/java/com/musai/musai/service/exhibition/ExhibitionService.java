@@ -10,13 +10,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class ExhibitionService {
     private final ExhibitionApiParser parser;
 
     @Value("${openapi.key}")
-    private String serviceKey;
+    private String serviceKey; // ✅ 이미 URL 인코딩된 값으로 properties에 저장
 
     @Autowired
     private ApiFetchStatusRepository statusRepository;
@@ -38,9 +38,15 @@ public class ExhibitionService {
     private final int FILTER_END_DATE = 20250721;
 
     private static final String API_URL_TEMPLATE =
-            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&pageNo=%d&numOfRows=%d&to=%s";
+            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters()
+                .add(0, new org.springframework.http.converter.StringHttpMessageConverter(StandardCharsets.UTF_8));
+        return restTemplate;
+    }
 
     public List<Exhibition> getAllExhibitions() {
         return exhibitionRepository.findAll();
@@ -51,7 +57,6 @@ public class ExhibitionService {
                 .orElseThrow(() -> new IllegalArgumentException("전시회 ID " + id + "가 존재하지 않습니다."));
     }
 
-    // 마지막 저장한 페이지 번호 가져오기
     public int getLastPageNo() {
         return statusRepository.findAll().stream()
                 .findFirst()
@@ -59,7 +64,6 @@ public class ExhibitionService {
                 .orElse(0);
     }
 
-    // 마지막 저장 페이지 번호 업데이트
     @Transactional
     public void updateLastPageNo(int pageNo) {
         List<ApiFetchStatus> list = statusRepository.findAll();
@@ -73,9 +77,9 @@ public class ExhibitionService {
         statusRepository.save(status);
     }
 
-    // API 호출, 필터링, 중복 체크, 저장, 이어받기 포함 전체 작업
+    // ✅ 전체 API 데이터 저장
     public void fetchAndSaveAllExhibitions() {
-        int pageNo = getLastPageNo() + 1;  // 마지막 페이지 다음부터 시작
+        int pageNo = getLastPageNo() + 1;
 
         while (true) {
             List<ExhibitionDTO> dataList = callApi(pageNo, NUM_OF_ROWS);
@@ -86,7 +90,6 @@ public class ExhibitionService {
             }
 
             processAndSave(dataList);
-
             updateLastPageNo(pageNo);
 
             if (dataList.size() < NUM_OF_ROWS) {
@@ -98,15 +101,10 @@ public class ExhibitionService {
         }
     }
 
-    // API 호출 및 XML 파싱
+    // ✅ API 호출
     private List<ExhibitionDTO> callApi(int pageNo, int numOfRows) {
         try {
-            // ✅ properties에서 가져온 원본 키 → 한 번만 인코딩
-            String encodedKey = URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
-            String url = String.format(API_URL_TEMPLATE, encodedKey, pageNo, numOfRows, FILTER_END_DATE);
-
-            log.info("Raw Service Key: {}", serviceKey);
-            log.info("Encoded Service Key: {}", encodedKey);
+            String url = String.format(API_URL_TEMPLATE, serviceKey, pageNo, numOfRows, FILTER_END_DATE);
 
             log.info("Calling API: {}", url);
 
@@ -114,8 +112,13 @@ public class ExhibitionService {
             headers.setAccept(List.of(MediaType.APPLICATION_XML));
             headers.set("User-Agent", "Mozilla/5.0");
 
-            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            URI uri = new URI(url);
+
+            ResponseEntity<String> response = restTemplate().exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             String responseXml = response.getBody();
+
+            log.info("Response XML length: {}", (responseXml != null ? responseXml.length() : 0));
+
 
             log.info("Response XML: {}", responseXml);
 
@@ -134,23 +137,25 @@ public class ExhibitionService {
         }
     }
 
-
-    // 필터링 및 저장 처리 (exhi_id 기준 중복 체크)
+    // ✅ DB 저장
     @Transactional
     private void processAndSave(List<ExhibitionDTO> dataList) {
         for (ExhibitionDTO dto : dataList) {
             try {
                 int endDateInt = Integer.parseInt(dto.getEndDate());
                 if (endDateInt >= FILTER_END_DATE) {
-                    Long exhiId = dto.getExhi_id();
-                    if (exhiId != null && !exhibitionRepository.existsById(exhiId)) {
-                        exhibitionRepository.save(dto.toEntity());
-                        log.info("Saved exhibition: exhi_id={}, title={}", exhiId, dto.getTitle());
+                    Integer seqnum = (dto.getExhi_id() != null) ? dto.getExhi_id().intValue() : null;
+
+                    if (seqnum != null && !exhibitionRepository.existsBySeqnum(seqnum)) {
+                        Exhibition entity = dto.toEntity();
+                        entity.setSeqnum(seqnum);
+                        exhibitionRepository.save(entity);
+                        log.info("✅ Saved exhibition: seqnum={}, title={}", seqnum, dto.getTitle());
                     } else {
-                        log.debug("Exhibition already exists: exhi_id={}", exhiId);
+                        log.debug("Duplicate found: seqnum={}", seqnum);
                     }
                 } else {
-                    log.debug("Filtered out exhibition by endDate: {}", dto.getEndDate());
+                    log.debug("Filtered out by endDate: {}", dto.getEndDate());
                 }
             } catch (NumberFormatException e) {
                 log.error("Invalid endDate format: {}", dto.getEndDate());
