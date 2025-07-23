@@ -15,8 +15,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -35,11 +39,18 @@ public class ExhibitionService {
     private ApiFetchStatusRepository statusRepository;
 
     private final int NUM_OF_ROWS = 500;
-    private final int FILTER_END_DATE = 20250721;
+//    private final int FILTER_END_DATE = 20250721;
+    private final int FILTER_END_DATE = Integer.parseInt(
+            LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+    );
 
-    private static final String API_URL_TEMPLATE =
-            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&keyword=전시&serviceTp=A&to=%s";
+    String keyword = URLEncoder.encode("전시", StandardCharsets.UTF_8);
+    String serviceTp = "A";
 
+//    private static final String API_URL_TEMPLATE =
+//            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&keyword=%s&serviceTp=%s&to=%s";
+private static final String API_URL_TEMPLATE =
+        "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
     @Bean
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
@@ -105,7 +116,6 @@ public class ExhibitionService {
     private List<ExhibitionDTO> callApi(int pageNo, int numOfRows) {
         try {
             String url = String.format(API_URL_TEMPLATE, serviceKey, pageNo, numOfRows, FILTER_END_DATE);
-
             log.info("Calling API: {}", url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -146,13 +156,20 @@ public class ExhibitionService {
             try {
                 Integer seqnum = (dto.getExhi_id() != null) ? dto.getExhi_id().intValue() : null;
 
-                if (seqnum != null && !exhibitionRepository.existsBySeqnum(seqnum)) {
+                // realmName이 "전시"이고 startDate, endDate가 null 또는 빈 문자열이 아니어야 저장
+                if (seqnum != null
+                        && "전시".equals(dto.getRealmName())
+                        && dto.getStartDate() != null && !dto.getStartDate().isBlank()
+                        && dto.getEndDate() != null && !dto.getEndDate().isBlank()
+                        && !exhibitionRepository.existsBySeqnum(seqnum)) {
+
                     Exhibition entity = dto.toEntity();
                     entity.setSeqnum(seqnum);
                     exhibitionRepository.save(entity);
-                    log.info("Saved exhibition: seqnum={}, title={}", seqnum, dto.getTitle());
+                    log.info("Saved exhibition: seqnum={}, title={}, realmName={}", seqnum, dto.getTitle(), dto.getRealmName());
                 } else {
-                    log.debug("Duplicate or null seqnum found: seqnum={}", seqnum);
+                    log.debug("Filtered out or duplicate seqnum found: seqnum={}, realmName={}, startDate={}, endDate={}",
+                            seqnum, dto.getRealmName(), dto.getStartDate(), dto.getEndDate());
                 }
             } catch (Exception e) {
                 log.error("Error saving exhibition: {}", dto, e);

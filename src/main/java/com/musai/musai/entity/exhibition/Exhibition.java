@@ -20,25 +20,25 @@ public class Exhibition {
     @Column(length = 200)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="start_date")
     private String startDate;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="end_date")
     private String endDate;
 
     @Column(columnDefinition = "TEXT")
     private String place;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="realm_name")
     private String realmName;
 
     @Column(columnDefinition = "TEXT")
     private String thumbnail;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="gps_x")
     private String gpsX;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", name="gps_y")
     private String gpsY;
 
     @Column(nullable = false, unique = true)
