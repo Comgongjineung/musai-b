@@ -15,7 +15,7 @@ public class Exhibition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "exhi_id")
-    private Long exhiId;
+    private Long exhiId; // DB 자동 증가 PK
 
     @Column(length = 200)
     private String title;
@@ -42,5 +42,5 @@ public class Exhibition {
     private String gpsY;
 
     @Column(nullable = false, unique = true)
-    private Integer seqnum;
+    private Integer seqnum; // ✅ API의 seq 값
 }

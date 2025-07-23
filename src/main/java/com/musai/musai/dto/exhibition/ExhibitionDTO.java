@@ -8,23 +8,51 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ExhibitionDTO {
+
     @JacksonXmlProperty(localName = "seq")
-    private Long exhi_id;      // 전시회 ID (API에서 seq로 옴)
+    private Long exhi_id; // ✅ API에서 오는 seq → DB의 seqnum으로 사용
 
+    @JacksonXmlProperty(localName = "serviceName")
+    private String serviceName;
+
+    @JacksonXmlProperty(localName = "title")
     private String title;
-    private String startDate;
-    private String endDate;
-    private String place;
-    private String realmName;
-    private String thumbnail;
-    private String gpsX;
-    private String gpsY;
 
-    // API에 seqnum 필드 없으니 제외하거나 별도로 관리
+    @JacksonXmlProperty(localName = "startDate")
+    private String startDate;
+
+    @JacksonXmlProperty(localName = "endDate")
+    private String endDate;
+
+    @JacksonXmlProperty(localName = "place")
+    private String place;
+
+    @JacksonXmlProperty(localName = "realmName")
+    private String realmName;
+
+    @JacksonXmlProperty(localName = "area")
+    private String area;
+
+    @JacksonXmlProperty(localName = "sigungu")
+    private String sigungu;
+
+    @JacksonXmlProperty(localName = "thumbnail")
+    private String thumbnail;
+
+    @JacksonXmlProperty(localName = "gpsX")
+    private String gpsX;
+
+    @JacksonXmlProperty(localName = "gpsY")
+    private String gpsY;
 
     public Exhibition toEntity() {
         Exhibition ex = new Exhibition();
-        ex.setExhiId(exhi_id);
+
+        // ✅ seqnum 매핑
+        if (exhi_id != null) {
+            ex.setSeqnum(exhi_id.intValue());
+        }
+
         ex.setTitle(title);
         ex.setStartDate(startDate);
         ex.setEndDate(endDate);
@@ -33,7 +61,7 @@ public class ExhibitionDTO {
         ex.setThumbnail(thumbnail);
         ex.setGpsX(gpsX);
         ex.setGpsY(gpsY);
-        // seqnum는 별도 처리 필요
+
         return ex;
     }
 }
