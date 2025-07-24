@@ -27,7 +27,7 @@ public class BookmarkService {
         return bookmark != null ? toDTO(bookmark) : null;
     }
 
-    public void addBookmark(BookmarkDTO dto) {
+    public BookmarkDTO addBookmark(BookmarkDTO dto) {
         Bookmark bookmark = Bookmark.builder()
                 .userId(dto.getUserId())
                 .title(dto.getTitle())
@@ -35,12 +35,18 @@ public class BookmarkService {
                 .description(dto.getDescription())
                 .imageUrl(dto.getImageUrl())
                 .build();
-        bookmarkRepository.save(bookmark);
+        Bookmark saved = bookmarkRepository.save(bookmark);
+        return toDTO(saved);
     }
     
     @Transactional
-    public void deleteBookmark(Long bookmarkId, Long userId) {
-        bookmarkRepository.deleteByBookmarkIdAndUserId(bookmarkId, userId);
+    public BookmarkDTO deleteBookmark(Long bookmarkId) {
+        Bookmark bookmark = bookmarkRepository.findById(bookmarkId).orElse(null);
+        if (bookmark == null) {
+            return null;
+        }
+        bookmarkRepository.deleteByBookmarkId(bookmarkId);
+        return toDTO(bookmark);
     }
 
     private BookmarkDTO toDTO(Bookmark bookmark) {
