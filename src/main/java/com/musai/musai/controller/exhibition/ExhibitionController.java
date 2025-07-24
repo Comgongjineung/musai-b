@@ -28,12 +28,19 @@ public class ExhibitionController {
         return exhibitionService.getAllExhibitions();
     }
 
-    // 특정 전시회 상세 조회
+    @Operation(summary = "전시회 상세 조회", description = "특정 전시회를 상세 조회합니다.")
     @GetMapping("/{id}")
     public Exhibition getExhibitionById(@PathVariable Long id) {
         return exhibitionService.getExhibitionById(id);
     }
 
+    @Operation(summary = "전시회 검색", description = "전시회 제목을 검색합니다.")
+    @GetMapping("/search")
+    public List<Exhibition> searchExhibitions(@RequestParam String keyword) {
+        return exhibitionService.searchExhibition(keyword);
+    }
+
+    @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")
     @GetMapping("/exhibitions/fetch")
     public String fetchExhibitions() {
         exhibitionService.fetchAndSaveAllExhibitions();

@@ -49,7 +49,7 @@ public class ExhibitionService {
 
 //    private static final String API_URL_TEMPLATE =
 //            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&keyword=%s&serviceTp=%s&to=%s";
-private static final String API_URL_TEMPLATE =
+    private static final String API_URL_TEMPLATE =
         "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
     @Bean
     public RestTemplate restTemplate() {
@@ -66,6 +66,10 @@ private static final String API_URL_TEMPLATE =
     public Exhibition getExhibitionById(Long id) {
         return exhibitionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("전시회 ID " + id + "가 존재하지 않습니다."));
+    }
+
+    public List<Exhibition> searchExhibition(String keyword) {
+        return exhibitionRepository.findByTitleContainingIgnoreCase(keyword);
     }
 
     public int getLastPageNo() {
