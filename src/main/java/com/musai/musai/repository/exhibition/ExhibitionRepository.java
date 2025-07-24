@@ -11,4 +11,5 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     boolean existsBySeqnum(Integer seqnum); // ✅ seqnum으로 중복 체크
     void deleteByEndDateBefore(String date);
     List<Exhibition> findByTitleContainingIgnoreCase(String keyword);
+    List<Exhibition> findByPlaceContainingIgnoreCase(String place);
 }

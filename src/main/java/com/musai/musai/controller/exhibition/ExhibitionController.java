@@ -35,9 +35,15 @@ public class ExhibitionController {
     }
 
     @Operation(summary = "전시회 검색", description = "전시회 제목을 검색합니다.")
-    @GetMapping("/search")
+    @GetMapping("/search/title")
     public List<Exhibition> searchExhibitions(@RequestParam String keyword) {
         return exhibitionService.searchExhibition(keyword);
+    }
+
+    @Operation(summary = "전시관 검색", description = "전시관을 검색합니다.")
+    @GetMapping("/search/place")
+    public List<Exhibition> searchPlace(@RequestParam String place) {
+        return exhibitionService.searchPlace(place);
     }
 
     @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")
