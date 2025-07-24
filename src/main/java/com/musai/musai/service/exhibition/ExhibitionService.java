@@ -72,6 +72,10 @@ public class ExhibitionService {
         return exhibitionRepository.findByTitleContainingIgnoreCase(keyword);
     }
 
+    public List<Exhibition> searchPlace(String place) {
+        return exhibitionRepository.findByPlaceContainingIgnoreCase(place);
+    }
+
     public int getLastPageNo() {
         return statusRepository.findAll().stream()
                 .findFirst()
