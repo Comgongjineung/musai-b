@@ -42,7 +42,7 @@ public class UserController {
                 )
         )
     })
-    @GetMapping("/{userId}")
+    @GetMapping("/read/{userId}")
     public ResponseEntity<UserDTO> readUser(@PathVariable Long userId) {
         UserDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
@@ -67,7 +67,7 @@ public class UserController {
                             )
                     )
             })
-    @PutMapping("/{userId}")
+    @PutMapping("/update/{userId}")
     public ResponseEntity<UserDTO> updateUser (
             @PathVariable Long userId,
             @RequestBody UserDTO userDTO) {
@@ -76,7 +76,7 @@ public class UserController {
     }
 
     @Operation(summary = "사용자 설정 조회", description = "사용자 설정 정보를 조회합니다..")
-    @GetMapping("/{userId}/difficulty")
+    @GetMapping("/setting/{userId}")
     public ResponseEntity<SettingDTO> readSetting (
             @PathVariable Long userId) {
         SettingDTO setting = userService.getSettingById(userId);
@@ -84,7 +84,7 @@ public class UserController {
     }
 
     @Operation(summary = "난이도별 해설 기본값 수정", description = "난이도별 해설 기본값을 수정합니다.")
-    @PutMapping("/{userId}/difficulty/{level}")
+    @PutMapping("/difficulty/{userId}/{level}")
     public ResponseEntity<SettingDTO> updateLevel (
             @PathVariable Long userId,
             @PathVariable DefaultDifficulty level) {
