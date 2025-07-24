@@ -37,15 +37,18 @@ public class BookmarkController {
 
     @Operation(summary = "북마크 추가", description = "북마크를 추가합니다.")
     @PostMapping("/add")
-    public ResponseEntity<Void> addBookmark(@RequestBody BookmarkDTO dto) {
-        bookmarkService.addBookmark(dto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BookmarkDTO> addBookmark(@RequestBody BookmarkDTO dto) {
+        BookmarkDTO saved = bookmarkService.addBookmark(dto);
+        return ResponseEntity.ok(saved);
     }
 
     @Operation(summary = "북마크 삭제", description = "북마크를 삭제합니다.")
-    @DeleteMapping("/delete/{bookmarkId}/{userId}")
-    public ResponseEntity<Void> deleteBookmark(@PathVariable Long bookmarkId, @PathVariable Long userId) {
-        bookmarkService.deleteBookmark(bookmarkId, userId);
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/delete/{bookmarkId}")
+    public ResponseEntity<BookmarkDTO> deleteBookmark(@PathVariable Long bookmarkId) {
+        BookmarkDTO deleted = bookmarkService.deleteBookmark(bookmarkId);
+        if (deleted == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(deleted);
     }
 }
