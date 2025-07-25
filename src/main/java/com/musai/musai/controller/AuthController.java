@@ -34,6 +34,9 @@ public class AuthController {
     @Value("${google.client-id.ios}")
     private String iosClientId;
 
+    @Value("${google.client-id.web}")
+    private String webClientId;
+
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
         String idTokenString = body.get("idToken");
@@ -42,7 +45,7 @@ public class AuthController {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
                     JacksonFactory.getDefaultInstance())
-                    .setAudience(List.of(androidClientId, iosClientId))
+                    .setAudience(List.of(androidClientId, iosClientId, webClientId))
                     .build();
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
