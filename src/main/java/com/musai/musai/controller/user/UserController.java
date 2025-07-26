@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,19 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @Operation(summary = "닉네임 중복 체크", description = "닉네임이 중복된 닉네임인지 확인합니다.")
+    @GetMapping("/check/nickname")
+    public ResponseEntity<?> checkNickname(
+            @RequestParam(required = false) Long userId,
+            @RequestParam String nickname) {
+        try {
+            userService.checkNickname(userId, nickname);
+            return ResponseEntity.ok("사용 가능한 닉네임입니다.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
     @Operation(summary = "회원 정보 수정", description = "회원 정보(닉네임, 프로필 사진)를 수정합니다.",
             responses = {
                     @ApiResponse(
@@ -67,12 +81,18 @@ public class UserController {
                             )
                     )
             })
-    @PutMapping("/update/{userId}")
-    public ResponseEntity<UserDTO> updateUser (
-            @PathVariable Long userId,
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser (
             @RequestBody UserDTO userDTO) {
-        UserDTO updateUser = userService.updateUser(userId, userDTO);
-        return ResponseEntity.ok(updateUser);
+        try {
+            UserDTO updateUser = userService.updateUser(userDTO);
+            return ResponseEntity.ok(updateUser);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("이미 사용 중인 닉네임입니다")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @Operation(summary = "사용자 설정 조회", description = "사용자 설정 정보를 조회합니다..")
