@@ -46,10 +46,10 @@ public class ExhibitionController {
         return exhibitionService.searchPlace(place);
     }
 
-    @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")
-    @GetMapping("/exhibitions/fetch")
-    public String fetchExhibitions() {
-        exhibitionService.fetchAndSaveAllExhibitions();
-        return "데이터 수집 완료";
-    }
+//    @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")
+//    @GetMapping("/exhibitions/fetch")
+//    public String fetchExhibitions() {
+//        exhibitionService.fetchAndSaveAllExhibitions();
+//        return "데이터 수집 완료";
+//    }
 }

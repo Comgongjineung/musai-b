@@ -39,7 +39,6 @@ public class ExhibitionService {
     private ApiFetchStatusRepository statusRepository;
 
     private final int NUM_OF_ROWS = 500;
-//    private final int FILTER_END_DATE = 20250721;
     private final int FILTER_END_DATE = Integer.parseInt(
             LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     );
@@ -47,8 +46,6 @@ public class ExhibitionService {
     String keyword = URLEncoder.encode("전시", StandardCharsets.UTF_8);
     String serviceTp = "A";
 
-//    private static final String API_URL_TEMPLATE =
-//            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&keyword=%s&serviceTp=%s&to=%s";
     private static final String API_URL_TEMPLATE =
         "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
     @Bean
@@ -185,4 +182,9 @@ public class ExhibitionService {
         }
     }
 
+    @Transactional
+    public void deleteEndedExhibitions() {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        exhibitionRepository.deleteByEndDateBefore(today);
+    }
 }
