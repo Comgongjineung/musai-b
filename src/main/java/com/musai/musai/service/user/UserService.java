@@ -100,7 +100,18 @@ public class UserService {
 
     public SettingDTO getSettingById(Long userId) {
         Setting setting = settingRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+                    
+                    Setting newSetting = Setting.builder()
+                            .userId(userId)
+                            .defaultDiffiiculty(DefaultDifficulty.NORMAL)
+                            .allowCalarm(true)
+                            .allowRalarm(true)
+                            .build();
+                    return settingRepository.save(newSetting);
+                });
 
         return SettingDTO.builder()
                 .userId(setting.getUserId())
@@ -112,7 +123,18 @@ public class UserService {
 
     public SettingDTO updateLevel(Long userId, DefaultDifficulty level) {
         Setting setting = settingRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
+                    
+                    Setting newSetting = Setting.builder()
+                            .userId(userId)
+                            .defaultDiffiiculty(level)
+                            .allowCalarm(true)
+                            .allowRalarm(true)
+                            .build();
+                    return settingRepository.save(newSetting);
+                });
 
         //업데이트 정보
         setting.setDefaultDiffiiculty(level);
