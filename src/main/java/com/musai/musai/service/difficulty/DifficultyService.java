@@ -17,7 +17,8 @@ public class DifficultyService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     // AI 서버 기본 URL (예: http://localhost:8000)
-    private String aiServerUrl = "http://localhost:8000";
+    private String aiServerUrl = "http://musai-ai:8000";
+    //private String aiServerUrl = "http://localhost:8000";
 
     public String convert(DefaultDifficulty level, String original) {
         // AI 서버 POST 경로 수정 (FastAPI 경로에 맞춤)
