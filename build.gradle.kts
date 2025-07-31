@@ -64,6 +64,10 @@ dependencies {
 
 	//api 파서
 	implementation ("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+
+	//firebase Config
+	implementation("com.google.firebase:firebase-admin:9.2.0")
+	implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
 }
 
 //dependencyManagement {
