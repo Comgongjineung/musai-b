@@ -1,0 +1,26 @@
+package com.musai.musai.dto.alarm;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.time.LocalDateTime;
+
+@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@Schema(description = "알림")
+public class AlarmDTO {
+    @Schema(description = "알림 고유 아이디")
+    private Long alarmId;
+    @Schema(description = "사용자 고유 아이디")
+    private Long userId;
+    @Schema(description = "알림 타입")
+    private String type;
+    @Schema(description = "알림 읽음 여부")
+    private Boolean isRead;
+    @Schema(description = "알림 생성 날짜")
+    private LocalDateTime createdAt;
+}
