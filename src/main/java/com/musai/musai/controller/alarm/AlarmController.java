@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "bearerAuth")
 public class AlarmController {
 
-    private AlarmService alarmService;
+    private final AlarmService alarmService;
 
     @PostMapping("/token")
     public ResponseEntity<String> saveFcmToken(
