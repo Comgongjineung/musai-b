@@ -8,9 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    
-    /**
-     * 사용자 ID로 티켓 목록 조회
-     */
     List<Ticket> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

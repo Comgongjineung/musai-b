@@ -1,15 +1,18 @@
-package com.musai.musai.service.post;
+package com.musai.musai.service.community;
 
-import com.musai.musai.dto.post.PostDto;
-import com.musai.musai.entity.post.Post;
-import com.musai.musai.repository.post.PostRepository;
+import com.musai.musai.dto.community.PostDTO;
+import com.musai.musai.entity.community.Post;
+import com.musai.musai.repository.community.PostRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class PostService {
 
     private final PostRepository postRepository;
@@ -19,7 +22,7 @@ public class PostService {
     }
 
     //게시글 업로드
-    public PostDto createPost(PostDto postDto) {
+    public PostDTO createPost(PostDTO postDto) {
         Post post = Post.builder()
                 .userId(postDto.getUserId())
                 .title(postDto.getTitle())
@@ -33,7 +36,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-        return PostDto.fromEntity(savedPost);
+        return PostDTO.fromEntity(savedPost);
     }
 
     //게시글 삭제
@@ -45,23 +48,23 @@ public class PostService {
     }
 
     //전체 게시글 조회
-    public List<PostDto> getAllPosts(){
+    public List<PostDTO> getAllPosts(){
         List<Post> posts = postRepository.findAll();
         return posts.stream()
-                .map(PostDto::fromEntity)
+                .map(PostDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     //게시글 상세 조회(id로)
-    public PostDto getPostById(Long postId) {
+    public PostDTO getPostById(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 id의 게시물이 존재하지 않습니다."));
 
-        return PostDto.fromEntity(post);
+        return PostDTO.fromEntity(post);
     }
 
     //게시글 수정
-    public PostDto updatePost(Long postId, PostDto postDto) {
+    public PostDTO updatePost(Long postId, PostDTO postDto) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 id의 게시물이 존재하지 않습니다."));
         post.update(postDto.getTitle(), postDto.getContent(),
@@ -70,6 +73,6 @@ public class PostService {
 
         post.setUpdatedAt(LocalDateTime.now());
 
-        return PostDto.fromEntity(postRepository.save(post));
+        return PostDTO.fromEntity(postRepository.save(post));
     }
 }

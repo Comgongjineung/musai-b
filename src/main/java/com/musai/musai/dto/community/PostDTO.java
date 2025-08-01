@@ -1,12 +1,12 @@
-package com.musai.musai.dto.post;
+package com.musai.musai.dto.community;
 
-import com.musai.musai.entity.post.Post;
+import com.musai.musai.entity.community.Post;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class PostDto {
+public class PostDTO {
     private Long postId;
     private Long userId;
     private String title;
@@ -18,8 +18,8 @@ public class PostDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static PostDto fromEntity(Post post) {
-        PostDto dto = new PostDto();
+    public static PostDTO fromEntity(Post post) {
+        PostDTO dto = new PostDTO();
         dto.setPostId(post.getPostId());
         dto.setUserId(post.getUserId());
         dto.setTitle(post.getTitle());
