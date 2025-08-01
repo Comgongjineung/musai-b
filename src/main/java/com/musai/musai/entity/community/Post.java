@@ -1,4 +1,4 @@
-package com.musai.musai.entity.post;
+package com.musai.musai.entity.community;
 
 import jakarta.persistence.*;
 import lombok.*;
