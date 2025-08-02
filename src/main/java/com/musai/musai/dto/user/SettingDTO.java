@@ -11,7 +11,7 @@ import lombok.*;
 @Schema(description = "설정 정보 조회")
 public class SettingDTO {
     private Long userId;
-    private DefaultDifficulty defaultDifiiculty;
+    private DefaultDifficulty defaultDifficulty;
     private Boolean allowCAlarm;
     private Boolean allowRAlarm;
 }
