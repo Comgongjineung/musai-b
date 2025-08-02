@@ -1,22 +1,32 @@
 package com.musai.musai.service.user;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.musai.musai.dto.community.PostDTO;
 import com.musai.musai.dto.user.SettingDTO;
 import com.musai.musai.dto.user.UserDTO;
+import com.musai.musai.entity.community.Post;
 import com.musai.musai.entity.user.DefaultDifficulty;
 import com.musai.musai.entity.user.Setting;
 import com.musai.musai.entity.user.User;
+import com.musai.musai.repository.community.CommentRepository;
+import com.musai.musai.repository.community.PostRepository;
 import com.musai.musai.repository.user.SettingRepository;
 import com.musai.musai.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import com.musai.musai.entity.community.Comment;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final SettingRepository settingRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public User findOrCreateUserFromGoogle(GoogleIdToken.Payload payload) {
@@ -49,12 +59,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
 
-        return UserDTO.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
-                .build();
+        return toUserDTO(user);
     }
 
     public void checkNickname(Long userId, String nickname) {
@@ -90,12 +95,15 @@ public class UserService {
         user.setProfileImage(userDTO.getProfileImage());
         userRepository.save(user);
 
-        return UserDTO.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
-                .build();
+        return toUserDTO(user);
+    }
+
+    public UserDTO deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
+
+        userRepository.delete(user);
+        return toUserDTO(user);
     }
 
     public SettingDTO getSettingById(Long userId) {
@@ -113,12 +121,7 @@ public class UserService {
                     return settingRepository.save(newSetting);
                 });
 
-        return SettingDTO.builder()
-                .userId(setting.getUserId())
-                .defaultDifiiculty(setting.getDefaultDiffiiculty())
-                .allowCAlarm(setting.getAllowCalarm())
-                .allowRAlarm(setting.getAllowRalarm())
-                .build();
+        return toSettingDTO(setting);
     }
 
     public SettingDTO updateLevel(Long userId, DefaultDifficulty level) {
@@ -140,11 +143,76 @@ public class UserService {
         setting.setDefaultDiffiiculty(level);
         settingRepository.save(setting);
 
+        return toSettingDTO(setting);
+    }
+
+    public SettingDTO updateRecogAlarm(Long userId) {
+        Setting updateSet = settingRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        Boolean recogAlarm = updateSet.getAllowRalarm();
+        if (recogAlarm)
+            recogAlarm = false;
+        else
+            recogAlarm = true;
+
+        updateSet.setAllowRalarm(recogAlarm);
+        settingRepository.save(updateSet);
+
+        return toSettingDTO(updateSet);
+    }
+
+    public SettingDTO updateCommunityAlarm(Long userId) {
+        Setting updateSet = settingRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        Boolean communityAlarm = updateSet.getAllowCalarm();
+        if (communityAlarm)
+            communityAlarm = false;
+        else
+            communityAlarm = true;
+
+        updateSet.setAllowCalarm(communityAlarm);
+        settingRepository.save(updateSet);
+
+        return toSettingDTO(updateSet);
+    }
+
+    public List<PostDTO> myPost(Long userId) {
+        List<Post> posts = postRepository.findByUserId(userId);
+        return posts.stream()
+                .map(PostDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostDTO> myComment(Long userId) {
+        List<Long> postIds = commentRepository.findByUserId(userId)
+                .stream()
+                .map(Comment::getPostId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<Post> posts = postRepository.findAllById(postIds);
+        return posts.stream()
+                .map(PostDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    private UserDTO toUserDTO(User user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .build();
+    }
+
+    private SettingDTO toSettingDTO(Setting setting) {
         return SettingDTO.builder()
                 .userId(setting.getUserId())
-                .defaultDifiiculty(setting.getDefaultDiffiiculty())
-                .allowCAlarm(setting.getAllowCalarm())
+                .defaultDifficulty(setting.getDefaultDiffiiculty())
                 .allowRAlarm(setting.getAllowRalarm())
+                .allowCAlarm(setting.getAllowCalarm())
                 .build();
     }
 }
