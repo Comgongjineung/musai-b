@@ -58,4 +58,11 @@ public class PostController {
         return ResponseEntity.ok(updatedPost);
     }
 
+    //게시물 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<PostDTO>> searchPosts(@RequestParam String keyword) {
+        List<PostDTO> searchResults = postService.searchPosts(keyword);
+        return ResponseEntity.ok(searchResults);
+    }
+
 }

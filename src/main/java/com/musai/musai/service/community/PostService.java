@@ -75,4 +75,12 @@ public class PostService {
 
         return PostDTO.fromEntity(postRepository.save(post));
     }
+
+    //게시물 검색
+    public List<PostDTO> searchPosts(String keyword) {
+        List<Post> posts = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword);
+        return posts.stream()
+                .map(PostDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 }
