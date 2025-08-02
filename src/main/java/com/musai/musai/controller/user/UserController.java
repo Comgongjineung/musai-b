@@ -1,5 +1,6 @@
 package com.musai.musai.controller.user;
 
+import com.musai.musai.dto.community.PostDTO;
 import com.musai.musai.dto.user.SettingDTO;
 import com.musai.musai.dto.user.UserDTO;
 import com.musai.musai.dto.user.UserErrorDTO;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/user")
@@ -95,6 +98,14 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴를 진행합니다.")
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<UserDTO> deleteUser(
+            @PathVariable Long userId) {
+        UserDTO deleteUser = userService.deleteUser(userId);
+        return ResponseEntity.ok(deleteUser);
+    }
+
     @Operation(summary = "사용자 설정 조회", description = "사용자 설정 정보를 조회합니다..")
     @GetMapping("/setting/{userId}")
     public ResponseEntity<SettingDTO> readSetting (
@@ -110,5 +121,36 @@ public class UserController {
             @PathVariable DefaultDifficulty level) {
         SettingDTO updateSet = userService.updateLevel(userId, level);
         return ResponseEntity.ok(updateSet);
+    }
+
+    @Operation(summary = "추천 알림 상태 변경", description = "추천 알림을 on/off 합니다.")
+    @PutMapping("/alarm/recog/{userId}")
+    public ResponseEntity<SettingDTO> updateRecogAlarm(
+            @PathVariable Long userId) {
+        SettingDTO updateSet = userService.updateRecogAlarm(userId);
+        return ResponseEntity.ok(updateSet);
+    }
+
+    @Operation(summary = "커뮤니티 알림 상태 변경", description = "커뮤니티 알림을 on/off 합니다.")
+    @PutMapping("/alarm/community/{userId}")
+    public ResponseEntity<SettingDTO> updateCommunityAlarm(
+            @PathVariable Long userId) {
+        SettingDTO updateSet = userService.updateCommunityAlarm(userId);
+        return ResponseEntity.ok(updateSet);
+    }
+
+    @Operation(summary = "내가 쓴 게시글 조회", description = "사용자가 쓴 게시글을 조회합니다.")
+    @GetMapping("/post/{userId}")
+    public ResponseEntity<List<PostDTO>> myPost(
+            @PathVariable Long userId) {
+        List<PostDTO> posts = userService.myPost(userId);
+        return ResponseEntity.ok(posts);
+    }
+
+    @Operation(summary = "내가 작성한 댓글 조회", description = "사용자가 댓글을 작성한 게시글을 조회합니다.")
+    @GetMapping("/comment/{userId}")
+    public ResponseEntity<List<PostDTO>> myComment(@PathVariable Long userId) {
+        List<PostDTO> comments = userService.myComment(userId);
+        return ResponseEntity.ok(comments);
     }
 }

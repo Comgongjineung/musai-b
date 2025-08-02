@@ -1,5 +1,8 @@
 package com.musai.musai.dto.community;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import lombok.*;
@@ -13,6 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "댓글")
 public class CommentDTO {
     @Schema(description = "댓글 고유 아이디", example = "1")
@@ -35,4 +39,24 @@ public class CommentDTO {
 
     @Schema(description = "답글 목록")
     private List<CommentDTO> replies;
+
+    @JsonCreator
+    public static CommentDTO create(
+            @JsonProperty("commentId") Long commentId,
+            @JsonProperty("userId") Long userId,
+            @JsonProperty("postId") Long postId,
+            @JsonProperty("parentCommentId") Long parentCommentId,
+            @JsonProperty("content") String content,
+            @JsonProperty("createdAt") LocalDateTime createdAt,
+            @JsonProperty("replies") List<CommentDTO> replies) {
+        return CommentDTO.builder()
+                .commentId(commentId)
+                .userId(userId)
+                .postId(postId)
+                .parentCommentId(parentCommentId)
+                .content(content)
+                .createdAt(createdAt)
+                .replies(replies)
+                .build();
+    }
 }
