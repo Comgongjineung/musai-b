@@ -30,13 +30,6 @@ public class LikeController {
         }
     }
 
-    @Operation(summary = "공감 조회", description = "내가 공감한 게시글을 조회합니다.")
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<Like>> getLikesByUser(@RequestParam Long userId) {
-        List<Like> likes = likeService.getLikesByUserId(userId);
-        return ResponseEntity.ok(likes);
-    }
-
     @Operation(summary = "공감 취소", description = "공감을 취소합니다.")
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteLike(@RequestBody LikeDTO dto) {

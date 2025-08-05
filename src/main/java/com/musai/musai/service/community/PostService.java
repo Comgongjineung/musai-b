@@ -16,9 +16,11 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final LikeService likeService;
 
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, LikeService likeService) {
         this.postRepository = postRepository;
+        this.likeService = likeService;
     }
 
     //게시글 업로드
@@ -36,7 +38,7 @@ public class PostService {
                 .build();
 
         Post savedPost = postRepository.save(post);
-        return PostDTO.fromEntity(savedPost);
+        return PostDTO.fromEntity(savedPost, 0L); // 새 게시글은 공감 개수 0
     }
 
     //게시글 삭제
@@ -47,20 +49,24 @@ public class PostService {
         postRepository.deleteById(postId);
     }
 
-    //전체 게시글 조회
+    //전체 게시글 조회 (공감 개수 포함)
     public List<PostDTO> getAllPosts(){
         List<Post> posts = postRepository.findAll();
         return posts.stream()
-                .map(PostDTO::fromEntity)
+                .map(post -> {
+                    Long likeCount = likeService.getLikeCountByPostId(post.getPostId());
+                    return PostDTO.fromEntity(post, likeCount);
+                })
                 .collect(Collectors.toList());
     }
 
-    //게시글 상세 조회(id로)
+    //게시글 상세 조회(id로) (공감 개수 포함)
     public PostDTO getPostById(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 id의 게시물이 존재하지 않습니다."));
 
-        return PostDTO.fromEntity(post);
+        Long likeCount = likeService.getLikeCountByPostId(postId);
+        return PostDTO.fromEntity(post, likeCount);
     }
 
     //게시글 수정
@@ -73,14 +79,19 @@ public class PostService {
 
         post.setUpdatedAt(LocalDateTime.now());
 
-        return PostDTO.fromEntity(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+        Long likeCount = likeService.getLikeCountByPostId(postId);
+        return PostDTO.fromEntity(savedPost, likeCount);
     }
 
-    //게시물 검색
+    //게시물 검색 (공감 개수 포함)
     public List<PostDTO> searchPosts(String keyword) {
         List<Post> posts = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword);
         return posts.stream()
-                .map(PostDTO::fromEntity)
+                .map(post -> {
+                    Long likeCount = likeService.getLikeCountByPostId(post.getPostId());
+                    return PostDTO.fromEntity(post, likeCount);
+                })
                 .collect(Collectors.toList());
     }
 }
