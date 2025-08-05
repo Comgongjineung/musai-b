@@ -1,9 +1,9 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.recog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.musai.musai.dto.VuforiaResponseDTO;
-import com.musai.musai.service.VuforiaService;
+import com.musai.musai.dto.recog.VuforiaResponseDTO;
+import com.musai.musai.service.recog.VuforiaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

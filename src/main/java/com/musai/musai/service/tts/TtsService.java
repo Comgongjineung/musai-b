@@ -1,24 +1,14 @@
-package com.musai.musai.service;
+package com.musai.musai.service.tts;
 
-import com.musai.musai.dto.TtsResponseDTO;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import java.util.Base64;
-import java.util.Map;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+
 import java.io.ByteArrayInputStream;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import java.io.IOException;
 
 @Service
 public class TtsService {

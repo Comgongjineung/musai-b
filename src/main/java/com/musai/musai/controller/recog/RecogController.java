@@ -1,8 +1,8 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.recog;
 
-import com.musai.musai.dto.RecogErrorDTO;
-import com.musai.musai.dto.RecogResponseDTO;
-import com.musai.musai.service.RecogService;
+import com.musai.musai.dto.recog.RecogErrorDTO;
+import com.musai.musai.dto.recog.RecogResponseDTO;
+import com.musai.musai.service.recog.RecogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

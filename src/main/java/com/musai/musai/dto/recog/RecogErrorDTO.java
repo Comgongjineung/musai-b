@@ -1,4 +1,4 @@
-package com.musai.musai.dto;
+package com.musai.musai.dto.recog;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

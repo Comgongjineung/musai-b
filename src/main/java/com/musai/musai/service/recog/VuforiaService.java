@@ -1,4 +1,4 @@
-package com.musai.musai.service;
+package com.musai.musai.service.recog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.CloseableHttpResponse;
