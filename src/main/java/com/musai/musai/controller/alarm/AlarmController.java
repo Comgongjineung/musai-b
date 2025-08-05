@@ -1,6 +1,7 @@
 package com.musai.musai.controller.alarm;
 
 import com.musai.musai.service.alarm.AlarmService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ public class AlarmController {
 
     private final AlarmService alarmService;
 
+    @Operation(summary = "FCM 토큰 발급", description = "FCM 토큰을 발급합니다.")
     @PostMapping("/token")
     public ResponseEntity<String> saveFcmToken(
             @RequestParam Long userId,
@@ -26,6 +28,7 @@ public class AlarmController {
         return ResponseEntity.ok(alarmService.saveToken(userId, token));
     }
 
+    @Operation(summary = "테스트 알림", description = "테스트로 실제 기기에 알림을 보냅니다.")
     @PostMapping("/test")
     public ResponseEntity<String> sendFcmMessage(
             @RequestParam String targetToken,
