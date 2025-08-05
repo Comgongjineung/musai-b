@@ -33,8 +33,17 @@ public class LikeService {
         return likeRepository.save(postLike);
     }
 
-    //공감 조회
-    public List<Like> getLikesByUserId(Long userId) {
-        return likeRepository.findAllByUserId(userId);
+    public Long getLikeCountByPostId(Long postId) {
+        return likeRepository.countByPostId(postId);
+    }
+
+    @Transactional
+    public Like deleteLike(Long postId, Long userId) {
+        Like existingLike = likeRepository.findByPostIdAndUserId(postId, userId)
+                .orElseThrow(() -> new IllegalStateException("해당 게시물에 등록된 공감이 없습니다."));
+
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
+        
+        return existingLike;
     }
 }
