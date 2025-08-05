@@ -1,6 +1,8 @@
 package com.musai.musai.controller.community;
 
 import com.musai.musai.dto.community.CommentDTO;
+import com.musai.musai.dto.community.CommentRequestDTO;
+import com.musai.musai.dto.community.CommentUpdateDTO;
 import com.musai.musai.service.community.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,7 +39,7 @@ public class CommentController {
 
     @Operation(summary = "댓글 작성", description = "댓글을 작성합니다.")
     @PostMapping("/add")
-    public ResponseEntity<CommentDTO> addComment(@RequestBody CommentDTO requestDTO) {
+    public ResponseEntity<CommentDTO> addComment(@RequestBody CommentRequestDTO requestDTO) {
         CommentDTO comment = commentService.addComment(requestDTO);
         return ResponseEntity.ok(comment);
     }
@@ -45,7 +47,7 @@ public class CommentController {
     @Operation(summary = "댓글 수정", description = "댓글을 수정합니다.")
     @PutMapping("/update/{commentId}")
     public ResponseEntity<CommentDTO> updateComment(
-            @PathVariable Long commentId, @RequestBody CommentDTO requestDTO) {
+            @PathVariable Long commentId, @RequestBody CommentUpdateDTO requestDTO) {
         CommentDTO updateComment = commentService.updateComment(commentId, requestDTO);
         return ResponseEntity.ok(updateComment);
     }

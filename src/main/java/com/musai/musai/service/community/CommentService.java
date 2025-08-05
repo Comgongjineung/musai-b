@@ -2,6 +2,8 @@ package com.musai.musai.service.community;
 
 import com.musai.musai.dto.bookmark.BookmarkDTO;
 import com.musai.musai.dto.community.CommentDTO;
+import com.musai.musai.dto.community.CommentRequestDTO;
+import com.musai.musai.dto.community.CommentUpdateDTO;
 import com.musai.musai.dto.ticket.TicketDTO;
 import com.musai.musai.entity.community.Comment;
 import com.musai.musai.entity.ticket.Ticket;
@@ -73,24 +75,27 @@ public class CommentService {
         return new PageImpl<>(pageContent, pageable, totalElements);
     }
 
-    public CommentDTO addComment(CommentDTO requestDTO) {
+    public CommentDTO addComment(CommentRequestDTO requestDTO) {
+        LocalDateTime now = LocalDateTime.now();
         Comment comment = Comment.builder()
                 .userId(requestDTO.getUserId())
                 .postId(requestDTO.getPostId())
                 .content(requestDTO.getContent())
                 .parentCommentId(requestDTO.getParentCommentId())
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now) // 생성 시에도 updatedAt 설정
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
         return toDTO(savedComment);
     }
 
-    public CommentDTO updateComment(Long commentId, CommentDTO requestDTO) {
+    public CommentDTO updateComment(Long commentId, CommentUpdateDTO requestDTO) {
         Comment comment = commentRepository.findByCommentId(commentId)
                 .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
         
         comment.setContent(requestDTO.getContent());
+        comment.setUpdatedAt(LocalDateTime.now()); // 수정 시간 업데이트
         Comment updatedComment = commentRepository.save(comment);
         return toDTO(updatedComment);
     }
@@ -111,6 +116,7 @@ public class CommentService {
                 .content(comment.getContent())
                 .parentCommentId(comment.getParentCommentId())
                 .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
                 .build();
     }
 }
