@@ -2,6 +2,7 @@ package com.musai.musai.controller.community;
 
 import com.musai.musai.dto.community.PostDTO;
 import com.musai.musai.service.community.PostService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class PostController {
         this.postService = postService;
     }
 
-    //글 작성
+    @Operation(summary = "게시글 작성", description = "게시글을 작성합니다.")
     @PostMapping("/add")
     public ResponseEntity<PostDTO> createPost(@RequestBody PostDTO postDto) {
         PostDTO createdPost = postService.createPost(postDto);
@@ -28,28 +29,28 @@ public class PostController {
         //반환값 postDto로 반환 부탁!
     }
 
-    //게시글 삭제
+    @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable Long postId) {
         postService.deletePost(postId);
         return ResponseEntity.ok("게시물 삭제 성공");
     }
 
-    //전체 게시글 조회
-    @GetMapping("/all")
+    @Operation(summary = "게시글 조회", description = "게시글을 조회합니다.")
+    @GetMapping("/readAll")
     public ResponseEntity<List<PostDTO>> getAllPosts() {
         List<PostDTO> postList = postService.getAllPosts();
         return ResponseEntity.ok(postList);
     }
 
-    //게시글 상세 조회(id로)
+    @Operation(summary = "게시글 상세 조회", description = "게시글을 상세 조회합니다.")
     @GetMapping("/detail/{postId}")
     public ResponseEntity<PostDTO> getPostDetail(@PathVariable Long postId) {
         PostDTO postDto = postService.getPostById(postId);
         return ResponseEntity.ok(postDto);
     }
 
-    //게시글 수정
+    @Operation(summary = "게시글 수정", description = "게시글을 수정합니다.")
     @PutMapping("/update/{postId}")
     public ResponseEntity<PostDTO> updatePost(
             @PathVariable Long postId,
@@ -58,7 +59,7 @@ public class PostController {
         return ResponseEntity.ok(updatedPost);
     }
 
-    //게시물 검색
+    @Operation(summary = "게시글 검색", description = "게시글을 검색합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<PostDTO>> searchPosts(@RequestParam String keyword) {
         List<PostDTO> searchResults = postService.searchPosts(keyword);
