@@ -1,4 +1,4 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.swagger;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

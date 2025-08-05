@@ -1,7 +1,7 @@
-package com.musai.musai.service;
+package com.musai.musai.service.recog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.musai.musai.dto.RecogResponseDTO;
+import com.musai.musai.dto.recog.RecogResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 

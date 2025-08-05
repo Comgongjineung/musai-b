@@ -1,4 +1,4 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.auth;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.musai.musai.entity.user.User;
 import com.musai.musai.jwt.JwtTokenProvider;
 import com.musai.musai.service.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,7 @@ public class AuthController {
     @Value("${google.client-id.web}")
     private String webClientId;
 
+    @Operation(summary = "구글 회원가입", description = "구글 계정으로 로그인 및 회원가입을 진행합니다.")
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
         String idTokenString = body.get("idToken");

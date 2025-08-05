@@ -1,4 +1,4 @@
-package com.musai.musai.dto;
+package com.musai.musai.dto.recog;
 
 import lombok.Getter;
 import lombok.Setter;
