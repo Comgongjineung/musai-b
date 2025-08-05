@@ -1,8 +1,7 @@
-package com.musai.musai.controller;
+package com.musai.musai.controller.tts;
 
-import com.musai.musai.dto.TtsRequestDTO;
-import com.musai.musai.dto.TtsResponseDTO;
-import com.musai.musai.service.TtsService;
+import com.musai.musai.dto.tts.TtsResponseDTO;
+import com.musai.musai.service.tts.TtsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/tts")
