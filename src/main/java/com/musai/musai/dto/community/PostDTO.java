@@ -17,6 +17,7 @@ public class PostDTO {
     private String image4;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long likeCount;
 
     public static PostDTO fromEntity(Post post) {
         PostDTO dto = new PostDTO();
@@ -30,6 +31,13 @@ public class PostDTO {
         dto.setImage4(post.getImage4());
         dto.setCreatedAt(post.getCreatedAt());
         dto.setUpdatedAt(post.getUpdatedAt());
+        return dto;
+    }
+
+    // 공감 개수를 포함한 fromEntity 메서드 오버로드
+    public static PostDTO fromEntity(Post post, Long likeCount) {
+        PostDTO dto = fromEntity(post);
+        dto.setLikeCount(likeCount);
         return dto;
     }
 }

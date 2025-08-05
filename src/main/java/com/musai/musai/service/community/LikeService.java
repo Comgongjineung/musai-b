@@ -33,9 +33,8 @@ public class LikeService {
         return likeRepository.save(postLike);
     }
 
-    //공감 조회
-    public List<Like> getLikesByUserId(Long userId) {
-        return likeRepository.findAllByUserId(userId);
+    public Long getLikeCountByPostId(Long postId) {
+        return likeRepository.countByPostId(postId);
     }
 
     @Transactional
