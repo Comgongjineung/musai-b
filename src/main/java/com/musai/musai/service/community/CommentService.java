@@ -6,8 +6,11 @@ import com.musai.musai.dto.community.CommentRequestDTO;
 import com.musai.musai.dto.community.CommentUpdateDTO;
 import com.musai.musai.dto.ticket.TicketDTO;
 import com.musai.musai.entity.community.Comment;
+import com.musai.musai.entity.community.Post;
 import com.musai.musai.entity.ticket.Ticket;
 import com.musai.musai.repository.community.CommentRepository;
+import com.musai.musai.repository.community.PostRepository;
+import com.musai.musai.service.alarm.AlarmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final AlarmService alarmService;
 
     public List<CommentDTO> getAllCommentByPostId(Long postId) {
         return commentRepository.findByPostId(postId)
@@ -87,6 +92,33 @@ public class CommentService {
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
+        
+        // 알림 처리
+        try {
+            if (requestDTO.getParentCommentId() == null) {
+                // 일반 댓글인 경우 - 게시글 작성자에게 알림
+                Post post = postRepository.findById(requestDTO.getPostId())
+                        .orElse(null);
+                if (post != null && !post.getUserId().equals(requestDTO.getUserId())) {
+                    // 댓글 개수 계산 (새로 작성된 댓글 포함)
+                    Long commentCount = getCommentCountByPostId(requestDTO.getPostId());
+                    alarmService.sendCommentNotification(post.getUserId(), post.getTitle(), requestDTO.getContent(), commentCount);
+                }
+            } else {
+                // 답글인 경우 - 원댓글 작성자에게 알림
+                Comment parentComment = commentRepository.findByCommentId(requestDTO.getParentCommentId())
+                        .orElse(null);
+                if (parentComment != null && !parentComment.getUserId().equals(requestDTO.getUserId())) {
+                    // 답글 레벨 계산
+                    int replyLevel = calculateReplyLevel(requestDTO.getParentCommentId());
+                    alarmService.sendReplyNotification(parentComment.getUserId(), parentComment.getContent(), replyLevel);
+                }
+            }
+        } catch (Exception e) {
+            // 알림 전송 실패해도 댓글 작성은 성공하도록 처리
+            System.err.println("알림 전송 실패: " + e.getMessage());
+        }
+        
         return toDTO(savedComment);
     }
 
@@ -110,6 +142,25 @@ public class CommentService {
 
     public Long getCommentCountByPostId(Long postId) {
         return commentRepository.countByPostId(postId);
+    }
+
+    /**
+     * 답글의 레벨을 계산합니다 (1번째 답글, 2번째 답글 등)
+     */
+    private int calculateReplyLevel(Long parentCommentId) {
+        int level = 1;
+        Long currentParentId = parentCommentId;
+        
+        while (currentParentId != null) {
+            Comment parent = commentRepository.findByCommentId(currentParentId).orElse(null);
+            if (parent == null || parent.getParentCommentId() == null) {
+                break;
+            }
+            level++;
+            currentParentId = parent.getParentCommentId();
+        }
+        
+        return level;
     }
 
     private CommentDTO toDTO(Comment comment) {

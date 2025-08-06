@@ -5,12 +5,16 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Schema(description = "알림")
 public class AlarmDTO {
     @Schema(description = "알림 고유 아이디")
