@@ -68,6 +68,8 @@ dependencies {
 	//firebase Config
 	implementation("com.google.firebase:firebase-admin:9.2.0")
 	implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
+
+	implementation("org.apache.commons:commons-imaging:1.0-alpha3")
 }
 
 //dependencyManagement {
