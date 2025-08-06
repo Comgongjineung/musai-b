@@ -1,12 +1,17 @@
 package com.musai.musai.controller.ticket;
 
+import com.musai.musai.dto.ticket.ColorDTO;
 import com.musai.musai.dto.ticket.TicketDTO;
+import com.musai.musai.service.ticket.ColorService;
 import com.musai.musai.service.ticket.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,6 +22,7 @@ import java.util.List;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final ColorService colorService;
 
     @Operation(summary = "티켓 목록 전체 조회", description = "티켓 리스트를 전체 조회합니다.")
     @GetMapping("/readAll/{userId}")
@@ -50,5 +56,11 @@ public class TicketController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(ticket);
+    }
+
+    @Operation(summary = "티켓 색상 추천", description = "티켓 배경 색상을 추천합니다.")
+    @PostMapping(value = "/color", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ColorDTO recommendColor(@RequestPart("image") MultipartFile image) throws Exception {
+        return colorService.getColorFromAiServer(image);
     }
 }
