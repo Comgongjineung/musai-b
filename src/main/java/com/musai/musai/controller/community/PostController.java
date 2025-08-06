@@ -1,6 +1,8 @@
 package com.musai.musai.controller.community;
 
 import com.musai.musai.dto.community.PostDTO;
+import com.musai.musai.dto.community.PostRequestDTO;
+import com.musai.musai.dto.community.PostUpdateDTO;
 import com.musai.musai.service.community.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -23,10 +25,9 @@ public class PostController {
 
     @Operation(summary = "게시글 작성", description = "게시글을 작성합니다.")
     @PostMapping("/add")
-    public ResponseEntity<PostDTO> createPost(@RequestBody PostDTO postDto) {
-        PostDTO createdPost = postService.createPost(postDto);
+    public ResponseEntity<PostDTO> createPost(@RequestBody PostRequestDTO postRequestDto) {
+        PostDTO createdPost = postService.createPost(postRequestDto);
         return ResponseEntity.ok(createdPost);
-        //반환값 postDto로 반환 부탁!
     }
 
     @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
@@ -36,7 +37,7 @@ public class PostController {
         return ResponseEntity.ok("게시물 삭제 성공");
     }
 
-    @Operation(summary = "게시글 조회", description = "게시글을 조회합니다.")
+    @Operation(summary = "게시글 전체 조회", description = "게시글 목록을 전체 조회합니다.")
     @GetMapping("/readAll")
     public ResponseEntity<List<PostDTO>> getAllPosts() {
         List<PostDTO> postList = postService.getAllPosts();
@@ -54,8 +55,8 @@ public class PostController {
     @PutMapping("/update/{postId}")
     public ResponseEntity<PostDTO> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostDTO postDto){
-        PostDTO updatedPost = postService.updatePost(postId, postDto);
+            @RequestBody PostUpdateDTO postUpdateDTO){
+        PostDTO updatedPost = postService.updatePost(postId, postUpdateDTO);
         return ResponseEntity.ok(updatedPost);
     }
 
