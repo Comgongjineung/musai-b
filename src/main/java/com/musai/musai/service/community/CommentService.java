@@ -42,7 +42,6 @@ public class CommentService {
 
     // 페이징 + 계층형 댓글 조회 (통합)
     public Page<CommentDTO> getHierarchicalCommentsWithPaging(Long postId, Pageable pageable) {
-        // 모든 댓글을 가져와서 계층형으로 구성
         List<Comment> allComments = commentRepository.findByPostId(postId);
         
         // 댓글을 부모-자식 관계로 그룹화
@@ -55,13 +54,7 @@ public class CommentService {
                 .filter(comment -> comment.getParentCommentId() == null)
                 .map(comment -> {
                     CommentDTO dto = toDTO(comment);
-                    // 해당 댓글의 답글들 추가
-                    List<Comment> replies = parentChildMap.get(comment.getCommentId());
-                    if (replies != null) {
-                        dto.setReplies(replies.stream()
-                                .map(this::toDTO)
-                                .collect(Collectors.toList()));
-                    }
+                    dto.setReplies(getRepliesRecursively(comment.getCommentId(), parentChildMap));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -80,6 +73,22 @@ public class CommentService {
         return new PageImpl<>(pageContent, pageable, totalElements);
     }
 
+    // 재귀적으로 답글을 처리하는 메서드
+    private List<CommentDTO> getRepliesRecursively(Long parentCommentId, Map<Long, List<Comment>> parentChildMap) {
+        List<Comment> replies = parentChildMap.get(parentCommentId);
+        if (replies == null || replies.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        return replies.stream()
+                .map(reply -> {
+                    CommentDTO replyDto = toDTO(reply);
+                    replyDto.setReplies(getRepliesRecursively(reply.getCommentId(), parentChildMap));
+                    return replyDto;
+                })
+                .collect(Collectors.toList());
+    }
+
     public CommentDTO addComment(CommentRequestDTO requestDTO) {
         LocalDateTime now = LocalDateTime.now();
         Comment comment = Comment.builder()
@@ -88,7 +97,7 @@ public class CommentService {
                 .content(requestDTO.getContent())
                 .parentCommentId(requestDTO.getParentCommentId())
                 .createdAt(now)
-                .updatedAt(now) // 생성 시에도 updatedAt 설정
+                .updatedAt(now)
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
@@ -127,7 +136,7 @@ public class CommentService {
                 .orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
         
         comment.setContent(requestDTO.getContent());
-        comment.setUpdatedAt(LocalDateTime.now()); // 수정 시간 업데이트
+        comment.setUpdatedAt(LocalDateTime.now());
         Comment updatedComment = commentRepository.save(comment);
         return toDTO(updatedComment);
     }
