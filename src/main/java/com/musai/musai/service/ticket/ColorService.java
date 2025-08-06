@@ -2,9 +2,11 @@ package com.musai.musai.service.ticket;
 
 import com.musai.musai.dto.ticket.ColorDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -13,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class ColorService {
 
     private static final String FAST_API_URL = "http://musai-ai:8000/color/recommend-color";
