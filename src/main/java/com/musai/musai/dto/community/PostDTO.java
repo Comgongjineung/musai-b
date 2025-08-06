@@ -18,6 +18,7 @@ public class PostDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long likeCount;
+    private Long commentCount;
 
     public static PostDTO fromEntity(Post post) {
         PostDTO dto = new PostDTO();
@@ -34,10 +35,10 @@ public class PostDTO {
         return dto;
     }
 
-    // 공감 개수를 포함한 fromEntity 메서드 오버로드
-    public static PostDTO fromEntity(Post post, Long likeCount) {
+    public static PostDTO fromEntity(Post post, Long likeCount, Long commentCount) {
         PostDTO dto = fromEntity(post);
         dto.setLikeCount(likeCount);
+        dto.setCommentCount(commentCount);
         return dto;
     }
 }

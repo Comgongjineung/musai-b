@@ -108,6 +108,10 @@ public class CommentService {
         return toDTO(comment);
     }
 
+    public Long getCommentCountByPostId(Long postId) {
+        return commentRepository.countByPostId(postId);
+    }
+
     private CommentDTO toDTO(Comment comment) {
         return CommentDTO.builder()
                 .commentId(comment.getCommentId())
