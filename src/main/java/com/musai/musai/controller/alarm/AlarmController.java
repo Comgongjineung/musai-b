@@ -1,15 +1,15 @@
 package com.musai.musai.controller.alarm;
 
+import com.musai.musai.dto.alarm.AlarmDTO;
 import com.musai.musai.service.alarm.AlarmService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,5 +55,33 @@ public class AlarmController {
                 return ResponseEntity.status(500).body("FCM 전송 실패: " + e.getMessage());
             }
         }
+    }
+
+    @Operation(summary = "알림 목록 조회", description = "사용자의 모든 알림 목록을 조회합니다.")
+    @GetMapping("/list/{userId}")
+    public ResponseEntity<List<AlarmDTO>> getAlarms(@PathVariable Long userId) {
+        List<AlarmDTO> alarms = alarmService.getAlarmsByUserId(userId);
+        return ResponseEntity.ok(alarms);
+    }
+
+    @Operation(summary = "알림 읽음 처리", description = "특정 알림을 읽음 처리합니다.")
+    @PutMapping("/read/{alarmId}")
+    public ResponseEntity<String> markAsRead(@PathVariable Long alarmId) {
+        alarmService.markAsRead(alarmId);
+        return ResponseEntity.ok("알림이 읽음 처리되었습니다.");
+    }
+
+    @Operation(summary = "모든 알림 읽음 처리", description = "사용자의 모든 알림을 읽음 처리합니다.")
+    @PutMapping("/readAll/{userId}")
+    public ResponseEntity<String> markAllAsRead(@PathVariable Long userId) {
+        alarmService.markAllAsRead(userId);
+        return ResponseEntity.ok("모든 알림이 읽음 처리되었습니다.");
+    }
+
+    @Operation(summary = "읽지 않은 알림 개수 조회", description = "사용자의 읽지 않은 알림 개수를 조회합니다.")
+    @GetMapping("/count/{userId}")
+    public ResponseEntity<Long> getUnreadCount(@PathVariable Long userId) {
+        Long count = alarmService.getUnreadCount(userId);
+        return ResponseEntity.ok(count);
     }
 }
