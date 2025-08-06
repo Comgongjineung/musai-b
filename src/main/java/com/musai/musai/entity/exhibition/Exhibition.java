@@ -42,5 +42,8 @@ public class Exhibition {
     private String gpsY;
 
     @Column(nullable = false, unique = true)
-    private Integer seqnum; // ✅ API의 seq 값
+    private Integer seqnum;
+
+    @Column(columnDefinition = "TEXT", name = "place_url")
+    private String placeUrl;
 }

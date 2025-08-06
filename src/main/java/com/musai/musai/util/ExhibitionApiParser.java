@@ -13,15 +13,10 @@ import java.util.List;
 @Component
 public class ExhibitionApiParser {
 
-    /**
-     * XML 문자열을 ExhibitionDTO 리스트로 파싱
-     */
     public List<ExhibitionDTO> parse(String xmlData) {
         List<ExhibitionDTO> result = new ArrayList<>();
         try {
             XmlMapper xmlMapper = new XmlMapper();
-
-            // API 응답 전체를 ExhibitionApiResponse로 매핑
             ExhibitionApiResponse response = xmlMapper.readValue(xmlData, ExhibitionApiResponse.class);
 
             if (response.getItems() != null) {
