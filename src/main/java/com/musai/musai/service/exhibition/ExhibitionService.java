@@ -1,27 +1,26 @@
 package com.musai.musai.service.exhibition;
 
 import com.musai.musai.dto.exhibition.ExhibitionDTO;
+import com.musai.musai.dto.exhibition.DetailApiResponse;
 import com.musai.musai.entity.exhibition.ApiFetchStatus;
 import com.musai.musai.entity.exhibition.Exhibition;
 import com.musai.musai.repository.exhibition.ApiFetchStatusRepository;
 import com.musai.musai.repository.exhibition.ExhibitionRepository;
+import com.musai.musai.util.DetailApiParser;
 import com.musai.musai.util.ExhibitionApiParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -31,12 +30,12 @@ public class ExhibitionService {
 
     private final ExhibitionRepository exhibitionRepository;
     private final ExhibitionApiParser parser;
+    private final RestTemplate restTemplate;  // 생성자 주입된 RestTemplate 필드 추가
 
     @Value("${openapi.key}")
-    private String serviceKey; // ✅ 이미 URL 인코딩된 값으로 properties에 저장
+    private String serviceKey; // 이미 URL 인코딩된 값으로 properties에 저장
 
-    @Autowired
-    private ApiFetchStatusRepository statusRepository;
+    private final ApiFetchStatusRepository statusRepository;
 
     private final int NUM_OF_ROWS = 500;
     private final int FILTER_END_DATE = Integer.parseInt(
@@ -47,14 +46,10 @@ public class ExhibitionService {
     String serviceTp = "A";
 
     private static final String API_URL_TEMPLATE =
-        "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
-    @Bean
-    public RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getMessageConverters()
-                .add(0, new org.springframework.http.converter.StringHttpMessageConverter(StandardCharsets.UTF_8));
-        return restTemplate;
-    }
+            "https://apis.data.go.kr/B553457/cultureinfo/period2?serviceKey=%s&PageNo=%d&numOfrows=%d&to=%s";
+
+    private static final String DETAIL_API_URL_TEMPLATE =
+            "https://apis.data.go.kr/B553457/cultureinfo/detail2?serviceKey=%s&seq=%s";
 
     public List<Exhibition> getAllExhibitions() {
         return exhibitionRepository.findAll();
@@ -93,7 +88,6 @@ public class ExhibitionService {
         statusRepository.save(status);
     }
 
-    // ✅ 전체 API 데이터 저장
     public void fetchAndSaveAllExhibitions() {
         int pageNo = getLastPageNo() + 1;
 
@@ -117,7 +111,6 @@ public class ExhibitionService {
         }
     }
 
-    // ✅ API 호출
     private List<ExhibitionDTO> callApi(int pageNo, int numOfRows) {
         try {
             String url = String.format(API_URL_TEMPLATE, serviceKey, pageNo, numOfRows, FILTER_END_DATE);
@@ -129,12 +122,10 @@ public class ExhibitionService {
 
             URI uri = new URI(url);
 
-            ResponseEntity<String> response = restTemplate().exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             String responseXml = response.getBody();
 
             log.info("Response XML length: {}", (responseXml != null ? responseXml.length() : 0));
-
-
             log.info("Response XML: {}", responseXml);
 
             if (responseXml == null || responseXml.isEmpty()) {
@@ -152,7 +143,6 @@ public class ExhibitionService {
         }
     }
 
-    // ✅ DB 저장
     @Transactional
     private void processAndSave(List<ExhibitionDTO> dataList) {
         log.info("Processing {} items", dataList.size());
@@ -161,7 +151,6 @@ public class ExhibitionService {
             try {
                 Integer seqnum = (dto.getExhi_id() != null) ? dto.getExhi_id().intValue() : null;
 
-                // realmName이 "전시"이고 startDate, endDate가 null 또는 빈 문자열이 아니어야 저장
                 if (seqnum != null
                         && "전시".equals(dto.getRealmName())
                         && dto.getStartDate() != null && !dto.getStartDate().isBlank()
@@ -186,5 +175,61 @@ public class ExhibitionService {
     public void deleteEndedExhibitions() {
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         exhibitionRepository.deleteByEndDateBefore(today);
+    }
+
+    // === 새로 추가된 placeUrl 업데이트 메서드 ===
+
+    @Transactional
+    public void updatePlaceUrlForAllExhibitions() {
+        List<Exhibition> exhibitions = exhibitionRepository.findAll();
+
+        for (Exhibition ex : exhibitions) {
+            try {
+                String placeUrl = fetchPlaceUrlFromDetailApi(ex.getSeqnum());
+                if (placeUrl != null && !placeUrl.isBlank()) {
+                    ex.setPlaceUrl(placeUrl);
+                    exhibitionRepository.save(ex);
+                    log.info("Updated placeUrl for seqnum {}", ex.getSeqnum());
+                } else {
+                    log.warn("No placeUrl found for seqnum {}", ex.getSeqnum());
+                }
+            } catch (Exception e) {
+                log.error("Error updating placeUrl for seqnum " + ex.getSeqnum(), e);
+            }
+        }
+    }
+
+    public String fetchPlaceUrlFromDetailApi(Integer seqnum) {
+        try {
+            String url = String.format(DETAIL_API_URL_TEMPLATE, serviceKey, seqnum);
+            log.info("Calling Detail API URL: {}", url);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(List.of(MediaType.APPLICATION_XML));
+            headers.set("User-Agent", "Mozilla/5.0");
+
+            URI uri = new URI(url);
+
+            ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            String xml = response.getBody();
+
+            if (xml == null || xml.isEmpty()) {
+                log.warn("Empty response from detail API for seqnum {}", seqnum);
+                return null;
+            }
+
+            DetailApiParser detailApiParser = new DetailApiParser();
+            DetailApiResponse detailResponse = detailApiParser.parse(xml);
+            if (detailResponse != null
+                    && detailResponse.getBody() != null
+                    && detailResponse.getBody().getItems() != null
+                    && detailResponse.getBody().getItems().getItem() != null) {
+                return detailResponse.getBody().getItems().getItem().getPlaceUrl();
+            }
+
+        } catch (Exception e) {
+            log.error("Detail API call failed for seqnum " + seqnum, e);
+        }
+        return null;
     }
 }

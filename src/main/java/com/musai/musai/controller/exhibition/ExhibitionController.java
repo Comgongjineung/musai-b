@@ -8,6 +8,7 @@ import com.musai.musai.service.exhibition.ExhibitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,14 @@ public class ExhibitionController {
     @GetMapping("/search/place")
     public List<Exhibition> searchPlace(@RequestParam String place) {
         return exhibitionService.searchPlace(place);
+    }
+
+
+    @Operation(summary = "장소 url 추가", description = "장소 url을 추가합니다.")
+    @PostMapping("/update-place-url")
+    public ResponseEntity<String> updatePlaceUrl() {
+        exhibitionService.updatePlaceUrlForAllExhibitions();
+        return ResponseEntity.ok("placeUrl 업데이트 작업 완료");
     }
 
 //    @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")

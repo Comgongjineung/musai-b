@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class ExhibitionDTO {
 
     @JacksonXmlProperty(localName = "seq")
-    private Long exhi_id; // ✅ API에서 오는 seq → DB의 seqnum으로 사용
+    private Long exhi_id; //API에서 오는 seq를 DB의 seqnum으로 사용
 
     @JacksonXmlProperty(localName = "serviceName")
     private String serviceName;
@@ -48,7 +48,7 @@ public class ExhibitionDTO {
     public Exhibition toEntity() {
         Exhibition ex = new Exhibition();
 
-        // ✅ seqnum 매핑
+        //seqnum 매핑
         if (exhi_id != null) {
             ex.setSeqnum(exhi_id.intValue());
         }
