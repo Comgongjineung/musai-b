@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import com.musai.musai.dto.alarm.AlarmDTO;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -114,6 +115,8 @@ public class AlarmService {
             Alarm alarm = Alarm.builder()
                     .userId(postAuthorId)
                     .type("COMMENT")
+                    .title(title)
+                    .content(body)
                     .isRead(false)
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -152,6 +155,8 @@ public class AlarmService {
             Alarm alarm = Alarm.builder()
                     .userId(commentAuthorId)
                     .type("REPLY")
+                    .title(title)
+                    .content(body)
                     .isRead(false)
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -193,10 +198,27 @@ public class AlarmService {
         return alarmRepository.countByUserIdAndIsReadFalse(userId);
     }
 
+    @Transactional
+    public List<AlarmDTO> deleteAlarmByAlarmId(Long alarmId) {
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new IllegalArgumentException("알림을 찾을 수 없습니다."));
+        Long userId = alarm.getUserId();
+        alarmRepository.deleteByAlarmId(alarmId);
+        return getAlarmsByUserId(userId);
+    }
+
+    @Transactional
+    public List<AlarmDTO> deleteAlarmByUserId(Long userId) {
+        alarmRepository.deleteByUserId(userId);
+        return getAlarmsByUserId(userId);
+    }
+
     private AlarmDTO toAlarmDTO(Alarm alarm) {
         return AlarmDTO.builder()
                 .alarmId(alarm.getAlarmId())
                 .userId(alarm.getUserId())
+                .title(alarm.getTitle())
+                .content(alarm.getContent())
                 .type(alarm.getType())
                 .isRead(alarm.getIsRead())
                 .createdAt(alarm.getCreatedAt())
