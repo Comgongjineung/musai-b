@@ -84,4 +84,18 @@ public class AlarmController {
         Long count = alarmService.getUnreadCount(userId);
         return ResponseEntity.ok(count);
     }
+
+    @Operation(summary = "알림 전체 삭제", description = "전체 알림을 삭제합니다. ")
+    @DeleteMapping("/delete/all")
+    public ResponseEntity<List<AlarmDTO>> deleteAllAlarms(@RequestParam Long userId) {
+        List<AlarmDTO> alarms = alarmService.deleteAlarmByUserId(userId);
+        return ResponseEntity.ok(alarms);
+    }
+
+    @Operation(summary = "특정 알림 삭제", description = "특정 알림을 삭제합니다.")
+    @DeleteMapping("/delete/{alarmId}")
+    public ResponseEntity<List<AlarmDTO>> deleteAlarmByAlarmId(@PathVariable Long alarmId) {
+        List<AlarmDTO> alarms = alarmService.deleteAlarmByAlarmId(alarmId);
+        return ResponseEntity.ok(alarms);
+    }
 }
