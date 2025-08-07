@@ -12,4 +12,6 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     List<Alarm> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<Alarm> findByUserIdAndIsReadFalse(Long userId);
     Long countByUserIdAndIsReadFalse(Long userId);
+    void deleteByUserId(Long userId);
+    void deleteByAlarmId(Long alarmId);
 }

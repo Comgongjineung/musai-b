@@ -23,6 +23,12 @@ public class Alarm {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
+
     @Column (name = "is_read")
     private Boolean isRead;
 

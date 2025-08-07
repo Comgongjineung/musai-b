@@ -23,6 +23,10 @@ public class AlarmDTO {
     private Long userId;
     @Schema(description = "알림 타입")
     private String type;
+    @Schema(description = "알림 제목")
+    private String title;
+    @Schema(description = "알림 내용")
+    private String content;
     @Schema(description = "알림 읽음 여부")
     private Boolean isRead;
     @Schema(description = "알림 생성 날짜")
