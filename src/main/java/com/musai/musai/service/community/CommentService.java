@@ -73,7 +73,6 @@ public class CommentService {
         return new PageImpl<>(pageContent, pageable, totalElements);
     }
 
-    // 재귀적으로 답글을 처리하는 메서드
     private List<CommentDTO> getRepliesRecursively(Long parentCommentId, Map<Long, List<Comment>> parentChildMap) {
         List<Comment> replies = parentChildMap.get(parentCommentId);
         if (replies == null || replies.isEmpty()) {
@@ -91,6 +90,15 @@ public class CommentService {
 
     public CommentDTO addComment(CommentRequestDTO requestDTO) {
         LocalDateTime now = LocalDateTime.now();
+
+        if (requestDTO.getParentCommentId() != null) {
+            Comment parentComment = commentRepository.findByCommentId(requestDTO.getParentCommentId())
+                    .orElseThrow(() -> new RuntimeException("해당 댓글이 존재하지 않아, 답글을 작성할 수 없습니다."));
+
+            if (!parentComment.getPostId().equals(requestDTO.getPostId()))
+                throw new RuntimeException("해당 게시글의 댓글에만 답글을 작성할 수 있습니다.");
+        }
+
         Comment comment = Comment.builder()
                 .userId(requestDTO.getUserId())
                 .postId(requestDTO.getPostId())
@@ -101,15 +109,12 @@ public class CommentService {
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
-        
-        // 알림 처리
+
         try {
             if (requestDTO.getParentCommentId() == null) {
-                // 일반 댓글인 경우 - 게시글 작성자에게 알림
                 Post post = postRepository.findById(requestDTO.getPostId())
                         .orElse(null);
                 if (post != null && !post.getUserId().equals(requestDTO.getUserId())) {
-                    // 댓글 개수 계산 (새로 작성된 댓글 포함)
                     Long commentCount = getCommentCountByPostId(requestDTO.getPostId());
                     alarmService.sendCommentNotification(post.getUserId(), post.getTitle(), requestDTO.getContent(), commentCount);
                 }
@@ -118,7 +123,6 @@ public class CommentService {
                 Comment parentComment = commentRepository.findByCommentId(requestDTO.getParentCommentId())
                         .orElse(null);
                 if (parentComment != null && !parentComment.getUserId().equals(requestDTO.getUserId())) {
-                    // 답글 레벨 계산
                     int replyLevel = calculateReplyLevel(requestDTO.getParentCommentId());
                     alarmService.sendReplyNotification(parentComment.getUserId(), parentComment.getContent(), replyLevel);
                 }
