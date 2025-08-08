@@ -48,6 +48,17 @@ public class TicketController {
         return ResponseEntity.ok(newTicket);
     }
 
+    @Operation(summary = "티켓 이미지 업로드", description = "티켓 이미지를 서버에 업로드하고 URL을 반환합니다.")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadTicketImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = ticketService.uploadTicketImage(file);
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("이미지 업로드 실패: " + e.getMessage());
+        }
+    }
+
     @Operation(summary = "티켓 삭제", description = "티켓을 삭제합니다.")
     @DeleteMapping("/delete/{ticketId}")
     public ResponseEntity<TicketDTO> deleteTicket(@PathVariable Long ticketId) {

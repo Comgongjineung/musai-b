@@ -70,6 +70,10 @@ dependencies {
 	implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
 
 	implementation("org.apache.commons:commons-imaging:1.0-alpha3")
+
+	// AWS S3 SDK
+	implementation("software.amazon.awssdk:s3:2.24.12")
+	implementation("software.amazon.awssdk:sts:2.24.12")
 }
 
 //dependencyManagement {
