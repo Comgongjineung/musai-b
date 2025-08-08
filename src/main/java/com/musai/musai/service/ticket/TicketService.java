@@ -6,7 +6,9 @@ import com.musai.musai.repository.ticket.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
+    private final S3Service s3Service;
 
     @Transactional(readOnly = true)
     public List<TicketDTO> getAllTicketsByUser(Long userId) {
@@ -47,11 +50,19 @@ public class TicketService {
         return toDTO(savedTicket);
     }
 
+    public String uploadTicketImage(MultipartFile file) throws IOException {
+        return s3Service.uploadImage(file);
+    }
+
     public TicketDTO deleteTicket(Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElse(null);
         
         if (ticket != null) {
+            if (ticket.getTicketImage() != null) {
+                s3Service.deleteImage(ticket.getTicketImage());
+            }
+            
             ticketRepository.delete(ticket);
             return toDTO(ticket);
         }
