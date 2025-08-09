@@ -45,6 +45,9 @@ public class PostService {
         if(!postRepository.existsById(postId)){
             throw new IllegalArgumentException("포스트 아이디 " + postId + " 없음");
         }
+
+        likeService.deleteAllByPostId(postId);
+        commentService.deleteAllByPostId(postId);
         postRepository.deleteById(postId);
     }
 

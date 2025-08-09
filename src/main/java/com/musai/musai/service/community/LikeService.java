@@ -17,10 +17,8 @@ public class LikeService {
         this.likeRepository = likeRepository;
     }
 
-    //공감 추가
     @Transactional
     public Like addLike(LikeDTO dto) {
-        // 중복 좋아요 방지
         if (likeRepository.existsByPostIdAndUserId(dto.getPostId(), dto.getUserId())) {
             throw new IllegalStateException("이미 좋아요가 등록된 게시물입니다.");
         }
@@ -45,5 +43,10 @@ public class LikeService {
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         
         return existingLike;
+    }
+
+    @Transactional
+    public void deleteAllByPostId(Long postId) {
+        likeRepository.deleteByPostId(postId);
     }
 }
