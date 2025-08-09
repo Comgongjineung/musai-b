@@ -157,9 +157,6 @@ public class CommentService {
         return commentRepository.countByPostId(postId);
     }
 
-    /**
-     * 답글의 레벨을 계산합니다 (1번째 답글, 2번째 답글 등)
-     */
     private int calculateReplyLevel(Long parentCommentId) {
         int level = 1;
         Long currentParentId = parentCommentId;
@@ -174,6 +171,12 @@ public class CommentService {
         }
         
         return level;
+    }
+
+    @Transactional
+    public void deleteAllByPostId(Long postId) {
+        commentRepository.deleteByPostIdAndParentCommentIdIsNotNull(postId);
+        commentRepository.deleteByPostIdAndParentCommentIdIsNull(postId);
     }
 
     private CommentDTO toDTO(Comment comment) {
