@@ -50,9 +50,6 @@ public class RecogResponseDTO {
     @Schema(description = "이미지 링크", example = "이미지 링크")
     private String original_image_url;
 
-    @Schema(description = "Vuforia 등록 결과", example = "success")
-    private String vuforia_status; // Optional 필드
-
     @Schema(description = "설명 난이도", example = "중")
     private String level;
 }

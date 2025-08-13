@@ -17,9 +17,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class VuforiaService {
+
+    private static final Logger log = LoggerFactory.getLogger(VuforiaService.class);
 
     @Value("${vuforia.access.key:}")
     private String accessKey;
@@ -46,7 +50,6 @@ public class VuforiaService {
 
         String jsonBody = new ObjectMapper().writeValueAsString(requestBody);
 
-        // JSON 바이트 배열로 직접 MD5 계산 (UTF-8 인코딩) - 16진수로 변환
         byte[] jsonBytes = jsonBody.getBytes(StandardCharsets.UTF_8);
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(jsonBytes);
@@ -55,13 +58,11 @@ public class VuforiaService {
         String contentType = "application/json";
         String date = getRFC1123Date();
 
-        // 로그 출력
         System.out.println("JSON Body: " + jsonBody);
         System.out.println("JSON Bytes Length: " + jsonBytes.length);
         System.out.println("Content-MD5 (hex): " + contentMD5);
         System.out.println("Date header value: " + date);
 
-        // String to Sign 구성 (POST 요청의 경우)
         String stringToSign = "POST\n" +
                 contentMD5 + "\n" +
                 contentType + "\n" +
@@ -79,12 +80,10 @@ public class VuforiaService {
         post.setHeader("Content-Type", contentType);
         post.setHeader("Date", date);
         post.setHeader("Content-MD5", contentMD5);
-        
-        // Entity를 한 번만 생성
+
         StringEntity entity = new StringEntity(jsonBody, StandardCharsets.UTF_8);
         post.setEntity(entity);
 
-        // 헤더 정보 출력
         System.out.println("=== Request Headers ===");
         System.out.println("Access Key: " + accessKey);
         System.out.println("Secret Key: " + secretKey.substring(0, 8) + "...");
@@ -116,10 +115,8 @@ public class VuforiaService {
     }
 
     private String getRFC1123Date() {
-        // 현재 시간을 GMT로 가져오기
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        
-        // RFC1123 형식으로 정확하게 포맷팅 (GMT 대신 z 사용)
+
         SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
         formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
         String dateString = formatter.format(calendar.getTime());
@@ -138,15 +135,13 @@ public class VuforiaService {
         return Base64.getEncoder().encodeToString(rawHmac);
     }
 
-    // API 키 유효성 테스트 메서드
     public String testConnection() throws Exception {
         if (accessKey == null || accessKey.isEmpty() || secretKey == null || secretKey.isEmpty()) {
             throw new IllegalStateException("Vuforia API 키가 설정되지 않았습니다.");
         }
 
         String date = getRFC1123Date();
-        
-        // GET 요청의 경우 빈 문자열의 MD5 해시 사용
+
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update("".getBytes(StandardCharsets.UTF_8));
         String contentMD5 = bytesToHex(md.digest());
@@ -187,7 +182,6 @@ public class VuforiaService {
         }
     }
 
-    // 더 간단한 API 키 테스트
     public String simpleTest() throws Exception {
         if (accessKey == null || accessKey.isEmpty() || secretKey == null || secretKey.isEmpty()) {
             throw new IllegalStateException("Vuforia API 키가 설정되지 않았습니다.");
@@ -209,5 +203,204 @@ public class VuforiaService {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public String findTargetIdByTitleAccurate(String title) throws Exception {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("작품 제목이 비어있습니다.");
+        }
+
+        List<String> targetIds = listTargetIds();
+        for (String id : targetIds) {
+            String name = getTargetName(id);
+            if (name != null && name.equalsIgnoreCase(title)) {
+                log.info("뷰포리아에서 target_id 찾음(정확 조회): {} -> {}", title, id);
+                return id;
+            }
+        }
+        log.warn("뷰포리아에서 작품 제목 '{}'에 해당하는 target_id를 찾을 수 없습니다.", title);
+        return null;
+    }
+
+    public String ensureTargetByTitle(String title, byte[] imageBytes, String metadata) throws Exception {
+        String existingId = findTargetIdByTitleAccurate(title);
+        if (existingId != null) {
+            return existingId;
+        }
+
+        String response = registerTarget(title, imageBytes, metadata != null ? metadata : title);
+
+        ObjectMapper mapper = new ObjectMapper();
+        com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(response);
+        String createdId = node.path("target_id").asText(null);
+        if (createdId != null && !createdId.isEmpty()) {
+            return createdId;
+        }
+
+        String fallbackId = findTargetIdByTitleAccurate(title);
+        if (fallbackId != null) {
+            return fallbackId;
+        }
+        throw new RuntimeException("Vuforia target 생성 또는 조회 실패: title=" + title);
+    }
+
+    private List<String> listTargetIds() throws Exception {
+        String date = getRFC1123Date();
+
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update("".getBytes(StandardCharsets.UTF_8));
+        String contentMD5 = bytesToHex(md.digest());
+
+        String stringToSign = "GET\n" +
+                contentMD5 + "\n" +
+                "\n" +
+                date + "\n" +
+                "/targets";
+
+        String signature = getHmacSHA1(stringToSign, secretKey);
+        String authHeader = "VWS " + accessKey + ":" + signature;
+
+        HttpGet get = new HttpGet(VUFORIA_URL + "/targets");
+        get.setHeader("Authorization", authHeader);
+        get.setHeader("Date", date);
+
+        try (CloseableHttpClient client = HttpClients.createDefault();
+             CloseableHttpResponse response = client.execute(get)) {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.warn("/targets 호출 실패: {} - {}", statusCode, responseBody);
+                return Collections.emptyList();
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(responseBody);
+            com.fasterxml.jackson.databind.JsonNode results = root.path("results");
+            if (!results.isArray()) {
+                return Collections.emptyList();
+            }
+            List<String> ids = new ArrayList<>();
+            for (com.fasterxml.jackson.databind.JsonNode item : results) {
+                String id = item.asText();
+                if (id != null && !id.isEmpty()) ids.add(id);
+            }
+            return ids;
+        }
+    }
+
+    private String getTargetName(String targetId) throws Exception {
+        String date = getRFC1123Date();
+
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update("".getBytes(StandardCharsets.UTF_8));
+        String contentMD5 = bytesToHex(md.digest());
+
+        String path = "/targets/" + targetId;
+        String stringToSign = "GET\n" +
+                contentMD5 + "\n" +
+                "\n" +
+                date + "\n" +
+                path;
+
+        String signature = getHmacSHA1(stringToSign, secretKey);
+        String authHeader = "VWS " + accessKey + ":" + signature;
+
+        HttpGet get = new HttpGet(VUFORIA_URL + path);
+        get.setHeader("Authorization", authHeader);
+        get.setHeader("Date", date);
+
+        try (CloseableHttpClient client = HttpClients.createDefault();
+             CloseableHttpResponse response = client.execute(get)) {
+            String responseBody = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.warn("/targets/{} 호출 실패: {} - {}", targetId, statusCode, responseBody);
+                return null;
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(responseBody);
+            // 일반적으로 target_record.name 에 위치
+            String name = root.path("target_record").path("name").asText(null);
+            if (name == null) {
+                name = root.path("name").asText(null);
+            }
+            return name;
+        }
+    }
+
+    public String findTargetIdByTitle(String title) throws Exception {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("작품 제목이 비어있습니다.");
+        }
+        
+        try {
+            String date = getRFC1123Date();
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update("".getBytes(StandardCharsets.UTF_8));
+            String contentMD5 = bytesToHex(md.digest());
+            
+            String stringToSign = "GET\n" +
+                    contentMD5 + "\n" +
+                    "\n" + // 빈 Content-Type
+                    date + "\n" +
+                    "/targets";
+            
+            String signature = getHmacSHA1(stringToSign, secretKey);
+            String authHeader = "VWS " + accessKey + ":" + signature;
+
+            HttpGet get = new HttpGet(VUFORIA_URL + "/targets");
+            get.setHeader("Authorization", authHeader);
+            get.setHeader("Date", date);
+
+            try (CloseableHttpClient client = HttpClients.createDefault();
+                 CloseableHttpResponse response = client.execute(get)) {
+
+                String responseBody = EntityUtils.toString(response.getEntity());
+                int statusCode = response.getStatusLine().getStatusCode();
+                
+                if (statusCode == 200) {
+                    return findTargetIdFromResponse(responseBody, title);
+                } else {
+                    log.warn("뷰포리아 API 호출 실패: {} - {}", statusCode, responseBody);
+                    return generateTempTargetId(title);
+                }
+            }
+            
+        } catch (Exception e) {
+            log.error("뷰포리아 target_id 조회 실패: {}", e.getMessage(), e);
+            return generateTempTargetId(title);
+        }
+    }
+
+    private String findTargetIdFromResponse(String responseBody, String title) {
+        try {
+            if (responseBody.contains("\"name\":\"" + title + "\"") || 
+                responseBody.contains("\"name\": \"" + title + "\"")) {
+
+                int targetIdIndex = responseBody.indexOf("\"target_id\":");
+                if (targetIdIndex != -1) {
+                    int startIndex = responseBody.indexOf("\"", targetIdIndex + 13) + 1;
+                    int endIndex = responseBody.indexOf("\"", startIndex);
+                    if (startIndex > 0 && endIndex > startIndex) {
+                        String targetId = responseBody.substring(startIndex, endIndex);
+                        log.info("뷰포리아에서 target_id 찾음: {} -> {}", title, targetId);
+                        return targetId;
+                    }
+                }
+            }
+            
+            log.warn("뷰포리아에서 작품 제목 '{}'에 해당하는 target_id를 찾을 수 없습니다.", title);
+            return generateTempTargetId(title);
+            
+        } catch (Exception e) {
+            log.error("뷰포리아 응답 파싱 실패: {}", e.getMessage(), e);
+            return generateTempTargetId(title);
+        }
+    }
+
+    private String generateTempTargetId(String title) {
+        String tempId = "temp_" + title.hashCode() + "_" + System.currentTimeMillis();
+        log.info("임시 target_id 생성: {} -> {}", title, tempId);
+        return tempId;
     }
 }
