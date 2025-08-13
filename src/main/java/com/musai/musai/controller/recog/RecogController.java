@@ -63,51 +63,24 @@ public class RecogController {
             }
     )
 
-    @PostMapping(value = "/analyzeAndRegister", consumes = "multipart/form-data")
-    public ResponseEntity<?> analyzeAndRegisterImage(@RequestParam("file") MultipartFile file,
+    @PostMapping(value = "/analyze", consumes = "multipart/form-data")
+    public ResponseEntity<?> analyze(@RequestParam("file") MultipartFile file,
                                                      @RequestParam(name = "level", required = false) String level,
                                                      @RequestParam(name = "best_guess", required = false) String bestGuess) {
         try {
-            // 1. AI 분석 결과 먼저 받기
             RecogResponseDTO responseDTO = recogService.sendImageToAiServer(file, level, bestGuess);
-
-            // 2. Vuforia 등록
-            try {
-                recogService.registerImageToVuforia(responseDTO);
-                responseDTO.setVuforia_status("success");
-            } catch (Exception ve) {
-                responseDTO.setVuforia_status("fail: " + ve.getMessage());
-            }
-
-            // 3. JSON 응답: 분석 결과 + Vuforia 등록 여부 포함
             return ResponseEntity.ok(responseDTO);
 
         } catch (Exception e) {
             RecogErrorDTO errorResponse = new RecogErrorDTO(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
                     HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                    "AI 분석 실패 또는 Vuforia 처리 실패: " + e.getMessage()
+                    "AI 분석 실패: " + e.getMessage()
             );
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse);
         }
     }
-
-//    @PostMapping(value = "/analyze", consumes = "multipart/form-data")
-//    public ResponseEntity<?> analyzeImage(@RequestParam("file") MultipartFile file) {
-//        try {
-//            RecogResponseDTO response = recogService.sendImageToAiServer(file);
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            RecogErrorDTO errorResponse = new RecogErrorDTO(
-//                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                    HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-//                    "AI 서버 분석 중 오류 발생: " + e.getMessage()
-//            );
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(errorResponse);
-//        }
-//    }
 
     @GetMapping("/ping")
     public String healthCheck() {
