@@ -2,22 +2,27 @@ package com.musai.musai.service.arts;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.musai.musai.entity.arts.Art;
+import com.musai.musai.entity.arts.Met;
 import com.musai.musai.repository.arts.ArtRepository;
+import com.musai.musai.repository.arts.MetRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.List;
+
 @Service
 public class ArtService {
 
     private final ArtRepository artRepository;
+    private final MetRepository metRepository;
 
-    public ArtService(ArtRepository artRepository) {
+    public ArtService(ArtRepository artRepository, MetRepository metRepository) {
         this.artRepository = artRepository;
+        this.metRepository = metRepository;
     }
 
-    // WebClient 생성
     private WebClient createNewWebClient() {
         return WebClient.builder()
                 .baseUrl("https://collectionapi.metmuseum.org")
@@ -31,11 +36,9 @@ public class ArtService {
                 .build();
     }
 
-    // objectEndDate 기준 시기 매핑
     private String determineStyle(Integer endDate, String culture) {
         if (endDate == null) return null;
 
-        // 아시아 지역 구분
         if (!isEmpty(culture)) {
             switch (culture) {
                 case "China":
@@ -70,7 +73,7 @@ public class ArtService {
                 case "Tajikistan":
                     return "중앙아시아";
                 case "Iran":
-                case "Persia":  // MET API에 따라 둘 다
+                case "Persia":
                 case "Iraq":
                 case "Syria":
                 case "Turkey":
@@ -108,7 +111,6 @@ public class ArtService {
     }
 
 
-    // JSON → Art 엔티티 변환 (필수 필드 체크)
     private Art convertJsonToArt(JsonNode json) {
         String primaryImageSmall = json.hasNonNull("primaryImageSmall") ? json.get("primaryImageSmall").asText() : null;
         String name = json.hasNonNull("artistDisplayName") ? json.get("artistDisplayName").asText() : null;
@@ -122,14 +124,12 @@ public class ArtService {
         Integer objectID = json.hasNonNull("objectID") ? json.get("objectID").asInt() : null;
         String classification = json.hasNonNull("classification") ? json.get("classification").asText() : null;
         String objectName = json.hasNonNull("objectName") ? json.get("objectName").asText() : null;
-        // 필수 필드 체크
+
         if (isEmpty(primaryImageSmall) || isEmpty(department) || isEmpty(title)
                 || isEmpty(objectDate) || objectEndDate == null || objectID == null) {
             return null;
         }
 
-
-        // title 중복 체크
         if (artRepository.existsByTitle(title)) {
             return null;
         }
@@ -151,11 +151,8 @@ public class ArtService {
         return art;
     }
 
-
-    // 단일 작품 가져오기
     public void fetchAndSaveArtwork(Integer objectID) {
         WebClient webClient = createNewWebClient();
-
         try {
             JsonNode json = webClient.get()
                     .uri("/public/collection/v1/objects/{id}", objectID)
@@ -167,38 +164,37 @@ public class ArtService {
                 Art art = convertJsonToArt(json);
                 if (art != null) {
                     artRepository.save(art);
-                    System.out.printf("✅ Saved artwork ID %d%n", objectID);
+                    System.out.printf("Saved artwork ID %d%n", objectID);
                 } else {
-                    System.out.printf("⚠️ Skipped artwork ID %d due to missing required fields or duplicate title%n", objectID);
+                    System.out.printf("Skipped artwork ID %d due to missing required fields or duplicate title%n", objectID);
                 }
             }
         } catch (WebClientResponseException e) {
-            System.err.printf(
-                    "❌ HTTP %d for objectID %d%n--- Headers --- %s%n--- Body --- %s%n",
-                    e.getRawStatusCode(),
-                    objectID,
-                    e.getHeaders(),
-                    e.getResponseBodyAsString()
-            );
+            System.err.printf("HTTP %d for objectID %d%n", e.getRawStatusCode(), objectID);
         } catch (Exception e) {
-            System.err.printf("💥 Unexpected error for objectID %d - %s%n", objectID, e.toString());
+            System.err.printf("Unexpected error for objectID %d - %s%n", objectID, e.toString());
             e.printStackTrace();
         }
     }
 
-    // 범위별 작품 가져오기 (배치 단위 + 대기 시간)
-    public void fetchAndSaveArtworksByRangeWithPause(int startId, int endId, int batchSize, int pauseMillis) {
-        for (int i = startId; i <= endId; i += batchSize) {
-            int batchStart = i;
-            int batchEnd = Math.min(i + batchSize - 1, endId);
-            System.out.printf("📦 Processing batch from %d to %d%n", batchStart, batchEnd);
+    // 범위별 작품 가져오기 (met_id 기준)
+    public void fetchAndSaveArtworksFromMetIds(Long startId, Long endId, int batchSize, int pauseMillis) {
+        List<Met> mets = metRepository.findByMetIdBetween(startId, endId);
 
-            for (int id = batchStart; id <= batchEnd; id++) {
-                fetchAndSaveArtwork(id);
+        for (int i = 0; i < mets.size(); i += batchSize) {
+            int batchEndIndex = Math.min(i + batchSize, mets.size());
+            List<Met> batch = mets.subList(i, batchEndIndex);
+
+            System.out.printf("Processing batch: met_id %d ~ %d%n",
+                    batch.get(0).getMetId(),
+                    batch.get(batch.size() - 1).getMetId());
+
+            for (Met met : batch) {
+                fetchAndSaveArtwork(met.getObjectId().intValue());
             }
 
-            if (batchEnd < endId) {
-                System.out.printf("⏸ Sleeping %d milliseconds before next batch...%n", pauseMillis);
+            if (batchEndIndex < mets.size()) {
+                System.out.printf("Sleeping %d milliseconds before next batch...%n", pauseMillis);
                 try {
                     Thread.sleep(pauseMillis);
                 } catch (InterruptedException e) {

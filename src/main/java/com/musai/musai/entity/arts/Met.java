@@ -12,7 +12,8 @@ public class Met {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long met_id;
+    @Column(name = "met_id")
+    private Long metId;
 
     @Column(name = "objectId")
     private Long objectId;

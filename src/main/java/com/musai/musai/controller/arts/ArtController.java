@@ -23,7 +23,7 @@ public class ArtController {
             @RequestParam(defaultValue = "5") int batchSize,
             @RequestParam(defaultValue = "10000") int pauseMillis) {
 
-        artService.fetchAndSaveArtworksByRangeWithPause(startId, endId, batchSize, pauseMillis);
+        artService.fetchAndSaveArtworksFromMetIds((long) startId, (long) endId, batchSize, pauseMillis);
         return ResponseEntity.ok("Fetch and save process started.");
     }
 }

@@ -8,5 +8,5 @@ import java.util.List;
 @Setter
 public class MetDto {
     private int total;
-    private List<Long> objectIDs;  // JSON 키와 정확히 일치해야 합니다
+    private List<Long> objectIDs;
 }
