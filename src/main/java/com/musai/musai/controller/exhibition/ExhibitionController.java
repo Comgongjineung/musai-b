@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.musai.musai.entity.exhibition.Exhibition;
 import com.musai.musai.service.exhibition.ExhibitionService;
-import com.musai.musai.service.exhibition.ExhibitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class ExhibitionController {
     private final ExhibitionService exhibitionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 전체 전시회 조회
     @Operation(summary = "전시회 목록 전체 조회", description = "전시회 목록을 조회합니다.")
     @GetMapping
     public List<Exhibition> getAllExhibitions() {
@@ -48,17 +46,21 @@ public class ExhibitionController {
     }
 
 
-    @Operation(summary = "장소 url 추가", description = "장소 url을 추가합니다.")
-    @PostMapping("/update-place-url")
-    public ResponseEntity<String> updatePlaceUrl() {
-        exhibitionService.updatePlaceUrlForAllExhibitions();
-        return ResponseEntity.ok("placeUrl 업데이트 작업 완료");
+    @Operation(summary = "가장 가까운 전시회 조회", description = "사용자 위치에서 가장 가까운 전시회 3개를 조회합니다.")
+    @GetMapping("/nearest")
+    public ResponseEntity<List<Exhibition>> findNearestExhibitions(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude) {
+        try {
+            if (latitude == null || longitude == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            List<Exhibition> nearestExhibitions = exhibitionService.findNearestExhibitions(latitude, longitude);
+            return ResponseEntity.ok(nearestExhibitions);
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
-
-//    @Operation(summary = "DB값 패치", description = "프론트와 상관없는 api입니다.")
-//    @GetMapping("/exhibitions/fetch")
-//    public String fetchExhibitions() {
-//        exhibitionService.fetchAndSaveAllExhibitions();
-//        return "데이터 수집 완료";
-//    }
 }
