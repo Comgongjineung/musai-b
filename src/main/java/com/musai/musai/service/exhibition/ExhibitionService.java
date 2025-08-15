@@ -7,6 +7,7 @@ import com.musai.musai.entity.exhibition.Exhibition;
 import com.musai.musai.repository.exhibition.ApiFetchStatusRepository;
 import com.musai.musai.repository.exhibition.ExhibitionRepository;
 import com.musai.musai.util.DetailApiParser;
+import com.musai.musai.util.DistanceCalculator;
 import com.musai.musai.util.ExhibitionApiParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -177,28 +178,6 @@ public class ExhibitionService {
         exhibitionRepository.deleteByEndDateBefore(today);
     }
 
-    // === 새로 추가된 placeUrl 업데이트 메서드 ===
-
-    @Transactional
-    public void updatePlaceUrlForAllExhibitions() {
-        List<Exhibition> exhibitions = exhibitionRepository.findAll();
-
-        for (Exhibition ex : exhibitions) {
-            try {
-                String placeUrl = fetchPlaceUrlFromDetailApi(ex.getSeqnum());
-                if (placeUrl != null && !placeUrl.isBlank()) {
-                    ex.setPlaceUrl(placeUrl);
-                    exhibitionRepository.save(ex);
-                    log.info("Updated placeUrl for seqnum {}", ex.getSeqnum());
-                } else {
-                    log.warn("No placeUrl found for seqnum {}", ex.getSeqnum());
-                }
-            } catch (Exception e) {
-                log.error("Error updating placeUrl for seqnum " + ex.getSeqnum(), e);
-            }
-        }
-    }
-
     public String fetchPlaceUrlFromDetailApi(Integer seqnum) {
         try {
             String url = String.format(DETAIL_API_URL_TEMPLATE, serviceKey, seqnum);
@@ -231,5 +210,48 @@ public class ExhibitionService {
             log.error("Detail API call failed for seqnum " + seqnum, e);
         }
         return null;
+    }
+
+    public List<Exhibition> findNearestExhibitions(Double latitude, Double longitude) {
+        try {
+            List<Exhibition> exhibitionsWithGPS = exhibitionRepository.findExhibitionsWithGPS();
+            
+            if (exhibitionsWithGPS.isEmpty()) {
+                log.warn("GPS 좌표가 있는 전시회가 없습니다.");
+                return List.of();
+            }
+
+            return exhibitionsWithGPS.stream()
+                    .filter(exhibition -> {
+                        try {
+                            Double.parseDouble(exhibition.getGpsX());
+                            Double.parseDouble(exhibition.getGpsY());
+                            return true;
+                        } catch (NumberFormatException e) {
+                            log.warn("Invalid GPS coordinates for exhibition {}: gpsX={}, gpsY={}", 
+                                    exhibition.getExhiId(), exhibition.getGpsX(), exhibition.getGpsY());
+                            return false;
+                        }
+                    })
+                    .sorted((a, b) -> {
+                        double distanceA = DistanceCalculator.calculateDistance(
+                                latitude, longitude,
+                                Double.parseDouble(a.getGpsY()),
+                                Double.parseDouble(a.getGpsX())
+                        );
+                        double distanceB = DistanceCalculator.calculateDistance(
+                                latitude, longitude,
+                                Double.parseDouble(b.getGpsY()),
+                                Double.parseDouble(b.getGpsX())
+                        );
+                        return Double.compare(distanceA, distanceB);
+                    })
+                    .limit(3)
+                    .toList();
+
+        } catch (Exception e) {
+            log.error("가장 가까운 전시회 조회 중 오류 발생", e);
+            return List.of();
+        }
     }
 }
