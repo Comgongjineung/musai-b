@@ -33,7 +33,6 @@ public class MetService {
                 .build();
     }
 
-    // API에서 전체 objectIDs 가져오기 + 배치 단위로 저장 메서드 호출
     public void fetchAndSaveAllObjects() {
         logger.info("Fetching object IDs from Met API...");
         MetDto response = webClient.get()
@@ -66,7 +65,6 @@ public class MetService {
         }
     }
 
-    // 배치 단위 저장 (새 트랜잭션으로 처리해 즉시 커밋)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveBatch(List<Long> objectIds) {
         List<Met> entities = objectIds.stream()
