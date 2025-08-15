@@ -14,6 +14,7 @@ import com.musai.musai.repository.user.UserRepository;
 import com.musai.musai.repository.user.SettingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -223,5 +224,36 @@ public class AlarmService {
                 .isRead(alarm.getIsRead())
                 .createdAt(alarm.getCreatedAt())
                 .build();
+    }
+
+    @Scheduled(cron = "0 0 15 * * *")
+    @Transactional
+    public void sendDailyExhibitionAlarm() {
+        log.info("🚀 매일 오후 3시 전시회 알림 전송 시작");
+        
+        try {
+            List<User> users = userRepository.findAll();
+            int successCount = 0;
+            
+            for (User user : users) {
+                try {
+                    Optional<Token> tokenOpt = tokenRepository.findByUserId(user.getUserId());
+                    if (tokenOpt.isPresent()) {
+                        String title = "지금 나에게 가장 가까운 전시회는 어디일까요?";
+                        String body = "지금 무사이에 접속해 가까운 전시회를 확인하세요!";
+                        
+                        sendFcm(tokenOpt.get().getToken(), title, body);
+                        successCount++;
+                    }
+                } catch (Exception e) {
+                    log.error("사용자 {}에게 전시회 알림 전송 실패: {}", user.getUserId(), e.getMessage());
+                }
+            }
+            
+            log.info("✅ 전시회 알림 전송 완료 - 성공: {}", successCount);
+            
+        } catch (Exception e) {
+            log.error("❌ 전시회 알림 전송 중 오류 발생: {}", e.getMessage(), e);
+        }
     }
 }
