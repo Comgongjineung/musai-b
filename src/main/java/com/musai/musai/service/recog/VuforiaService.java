@@ -40,7 +40,9 @@ public class VuforiaService {
         }
 
         String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-        String base64Metadata = Base64.getEncoder().encodeToString(metadata.getBytes(StandardCharsets.UTF_8));
+        String base64Metadata = Base64.getEncoder().encodeToString(
+            (metadata != null ? metadata : "").getBytes(StandardCharsets.UTF_8)
+        );
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("name", imageName);
