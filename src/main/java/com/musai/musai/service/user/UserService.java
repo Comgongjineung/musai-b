@@ -6,10 +6,12 @@ import com.musai.musai.dto.user.SettingDTO;
 import com.musai.musai.dto.user.UserDTO;
 import com.musai.musai.entity.community.Post;
 import com.musai.musai.entity.user.DefaultDifficulty;
+import com.musai.musai.entity.user.Preference;
 import com.musai.musai.entity.user.Setting;
 import com.musai.musai.entity.user.User;
 import com.musai.musai.repository.community.CommentRepository;
 import com.musai.musai.repository.community.PostRepository;
+import com.musai.musai.repository.user.PreferenceRepository;
 import com.musai.musai.repository.user.SettingRepository;
 import com.musai.musai.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class UserService {
     private final SettingRepository settingRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PreferenceRepository preferenceRepository;
 
     @Transactional
     public User findOrCreateUserFromGoogle(GoogleIdToken.Payload payload) {
@@ -51,8 +54,18 @@ public class UserService {
                         .allowCalarm(true)
                         .allowRalarm(true)
                         .build());
+                String defaultPreferences = createDefaultPreferencesJson();
+                preferenceRepository.save(Preference.builder()
+                        .userId(user.getUserId())
+                        .preferences(defaultPreferences)
+                        .build());
+                
                 return user;
             });
+    }
+
+    private String createDefaultPreferencesJson() {
+        return "{\"고대 미술\":0,\"중세 미술\":0,\"르네상스\":0,\"바로크\":0,\"로코코\":0,\"신고전주의\":0,\"낭만주의\":0,\"사실주의\":0,\"인상주의\":0,\"후기 인상주의\":0,\"아르누보\":0,\"야수파 & 표현주의\":0,\"입체주의\":0,\"미래주의 & 구성주의\":0,\"다다 & 초현실주의\":0,\"추상표현주의\":0,\"팝아트\":0,\"미니멀리즘 & 현대미술\":0,\"동아시아\":0,\"동남아시아\":0,\"남아시아\":0,\"중앙아시아\":0,\"서아시아 / 중동\":0}";
     }
 
     public UserDTO getUserById(Long userId) {
