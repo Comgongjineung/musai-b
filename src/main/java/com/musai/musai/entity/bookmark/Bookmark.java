@@ -35,4 +35,7 @@ public class Bookmark {
 
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Column(name = "style")
+    private String style;
 }

@@ -25,4 +25,6 @@ public class BookmarkDTO {
     private String description;
     @Schema(description = "작품 이미지", example = "monarisa.jpg")
     private String imageUrl;
+    @Schema(description = "작품 예술사조", example = "르네상스")
+    private String style;
 }
