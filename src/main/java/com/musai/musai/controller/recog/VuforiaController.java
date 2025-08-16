@@ -28,8 +28,8 @@ public class VuforiaController {
     private final VuforiaService vuforiaService;
     private final ObjectMapper objectMapper;
 
-    @Operation(summary = "Vuforia 이미지 등록", description = "이미지 파일을 multipart/form-data 형식으로 업로드하여 Vuforia 타겟을 등록합니다.")
-    @PostMapping(value = "/vuforia/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Vuforia 이미지 등록 (기존)", description = "이미지 파일을 multipart/form-data 형식으로 업로드하여 Vuforia 타겟을 등록합니다.")
+    @PostMapping(value = "/vuforia/register-old", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<VuforiaResponseDTO> registerTarget(
             @Parameter(description = "업로드할 이미지 파일", required = true,
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -42,8 +42,7 @@ public class VuforiaController {
             byte[] imageBytes = file.getBytes();
 
             String result = vuforiaService.registerTarget(imageName, imageBytes, metadata);
-            
-            // JSON 응답에서 target_id 추출
+
             JsonNode jsonNode = objectMapper.readTree(result);
             String targetId = jsonNode.path("target_id").asText();
             
