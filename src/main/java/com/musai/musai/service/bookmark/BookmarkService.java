@@ -34,6 +34,7 @@ public class BookmarkService {
                 .artist(dto.getArtist())
                 .description(dto.getDescription())
                 .imageUrl(dto.getImageUrl())
+                .style(dto.getStyle())
                 .build();
         Bookmark saved = bookmarkRepository.save(bookmark);
         return toDTO(saved);
@@ -57,6 +58,7 @@ public class BookmarkService {
         dto.setArtist(bookmark.getArtist());
         dto.setDescription(bookmark.getDescription());
         dto.setImageUrl(bookmark.getImageUrl());
+        dto.setStyle(bookmark.getStyle());
         return dto;
     }
 }
