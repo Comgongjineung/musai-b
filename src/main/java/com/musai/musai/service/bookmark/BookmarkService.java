@@ -3,15 +3,13 @@ package com.musai.musai.service.bookmark;
 import com.musai.musai.dto.bookmark.BookmarkDTO;
 import com.musai.musai.entity.bookmark.Bookmark;
 import com.musai.musai.repository.bookmark.BookmarkRepository;
-import com.musai.musai.service.user.PreferenceService;
+import com.musai.musai.service.preference.PreferenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
