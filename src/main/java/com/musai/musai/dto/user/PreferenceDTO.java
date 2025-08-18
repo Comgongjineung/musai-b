@@ -1,4 +1,4 @@
-package com.musai.musai.dto.preference;
+package com.musai.musai.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

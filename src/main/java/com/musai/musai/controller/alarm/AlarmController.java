@@ -4,7 +4,6 @@ import com.musai.musai.dto.alarm.AlarmDTO;
 import com.musai.musai.service.alarm.AlarmService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/alarm")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "알림", description = "알림 기능 API")
 public class AlarmController {
 
     private final AlarmService alarmService;

@@ -6,7 +6,6 @@ import com.musai.musai.entity.user.DefaultDifficulty;
 import com.musai.musai.service.difficulty.DifficultyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/difficulty")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "난이도별 해설", description = "난이도별 해설 기능 API")
 public class DifficultyController {
 
     private final DifficultyService difficultyService;

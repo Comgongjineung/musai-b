@@ -7,7 +7,6 @@ import com.musai.musai.entity.user.User;
 import com.musai.musai.jwt.JwtTokenProvider;
 import com.musai.musai.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "회원가입", description = "회원가입 관련 API")
 public class AuthController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;

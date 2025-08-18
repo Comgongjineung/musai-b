@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/tts")
 @CrossOrigin(origins = "*")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "TTS", description = "TTS 기능 API")
 public class TtsController {
 
     private final TtsService ttsService;

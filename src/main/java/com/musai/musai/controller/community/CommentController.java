@@ -6,7 +6,6 @@ import com.musai.musai.dto.community.CommentUpdateDTO;
 import com.musai.musai.service.community.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/comment")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "커뮤니티 댓글", description = "커뮤니티 댓글 기능 API")
 public class CommentController {
 
     private final CommentService commentService;

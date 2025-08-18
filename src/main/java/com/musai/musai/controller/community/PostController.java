@@ -6,7 +6,6 @@ import com.musai.musai.dto.community.PostUpdateDTO;
 import com.musai.musai.service.community.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/post")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "커뮤니티 게시글", description = "커뮤니티 게시글 기능 API")
 public class PostController {
 
     private final PostService postService;

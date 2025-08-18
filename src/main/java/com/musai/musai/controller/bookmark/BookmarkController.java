@@ -4,7 +4,6 @@ import com.musai.musai.dto.bookmark.BookmarkDTO;
 import com.musai.musai.service.bookmark.BookmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import java.util.Map;
 @RequestMapping("/bookmark")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "북마크", description = "북마크 기능 API")
 public class BookmarkController {
 
     private final BookmarkService bookmarkService;

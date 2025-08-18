@@ -1,9 +1,8 @@
-package com.musai.musai.controller.preference;
+package com.musai.musai.controller.user;
 
-import com.musai.musai.dto.preference.PreferenceDTO;
-import com.musai.musai.service.preference.PreferenceService;
+import com.musai.musai.dto.user.PreferenceDTO;
+import com.musai.musai.service.user.PreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/preference")
+@RequestMapping("/preferences")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name = "선호도", description = "사용자 선호도 관리 API")
+@Tag(name = "Preference", description = "사용자 선호도 관리 API")
 public class PreferenceController {
 
     private final PreferenceService preferenceService;
