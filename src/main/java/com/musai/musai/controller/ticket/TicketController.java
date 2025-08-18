@@ -6,6 +6,7 @@ import com.musai.musai.service.ticket.ColorService;
 import com.musai.musai.service.ticket.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequestMapping("/ticket")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "티겟", description = "티켓 기능 API")
 public class TicketController {
 
     private final TicketService ticketService;

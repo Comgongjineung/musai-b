@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/recog")
 @CrossOrigin(origins = "*") // Flutter와 연결 시 CORS 허용
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "작품 인식", description = "작품 인식 및 해설 API")
 public class RecogController {
 
     private final RecogService recogService;
@@ -80,10 +82,5 @@ public class RecogController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorResponse);
         }
-    }
-
-    @GetMapping("/ping")
-    public String healthCheck() {
-        return "API 서버 살아있음";
     }
 }
