@@ -1,27 +1,27 @@
-package com.musai.musai.service.preferenceRecommend;
+package com.musai.musai.service.preference;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musai.musai.dto.arts.ArtDto;
-import com.musai.musai.dto.preferenceRecommend.PreferenceRecommendDTO;
+import com.musai.musai.dto.preference.RecommendDTO;
 import com.musai.musai.entity.arts.Art;
-import com.musai.musai.entity.preferenceRecommend.PreferenceRecommend;
+import com.musai.musai.entity.preference.Recommend;
 import com.musai.musai.repository.arts.ArtRepository;
-import com.musai.musai.repository.preferenceRecommend.PreferenceRecommendRepository;
+import com.musai.musai.repository.preference.RecommendRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class PreferenceRecommendService {
+public class RecommendService {
 
-    private final PreferenceRecommendRepository preferenceRepository;
+    private final RecommendRepository preferenceRepository;
     private final ArtRepository artsRepository;
     private final ObjectMapper objectMapper;
 
-    public PreferenceRecommendService(
-            PreferenceRecommendRepository preferenceRepository,
+    public RecommendService(
+            RecommendRepository preferenceRepository,
             ArtRepository artsRepository,
             ObjectMapper objectMapper
     ) {
@@ -30,8 +30,8 @@ public class PreferenceRecommendService {
         this.objectMapper = objectMapper;
     }
 
-    public PreferenceRecommendDTO getRecommendations(Long userId, int totalCount) throws Exception {
-        PreferenceRecommend preference = preferenceRepository.findById(userId)
+    public RecommendDTO getRecommendations(Long userId, int totalCount) throws Exception {
+        Recommend preference = preferenceRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // JSON → Map 변환
@@ -52,7 +52,7 @@ public class PreferenceRecommendService {
         if (totalScore == 0) {
             List<ArtDto> randomArts = artsRepository.findRandomAll(totalCount)
                     .stream().map(this::toDto).collect(Collectors.toList());
-            return new PreferenceRecommendDTO(userId, Collections.singletonMap("RANDOM", totalCount), randomArts);
+            return new RecommendDTO(userId, Collections.singletonMap("RANDOM", totalCount), randomArts);
         }
 
         // 비율 계산
@@ -90,7 +90,7 @@ public class PreferenceRecommendService {
             );
         }
 
-        return new PreferenceRecommendDTO(userId, perStyleCount, recommendations);
+        return new RecommendDTO(userId, perStyleCount, recommendations);
     }
 
     // Entity → DTO 변환

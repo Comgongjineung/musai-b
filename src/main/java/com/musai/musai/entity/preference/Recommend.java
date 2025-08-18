@@ -1,4 +1,4 @@
-package com.musai.musai.entity.preferenceRecommend;
+package com.musai.musai.entity.preference;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Table(name = "preference")
 @Getter
 @Setter
-public class PreferenceRecommend {
+public class Recommend {
 
     @Id
     @Column(name = "user_id")

@@ -4,6 +4,8 @@ import com.musai.musai.dto.community.LikeDTO;
 import com.musai.musai.entity.community.Like;
 import com.musai.musai.service.community.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +13,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/like")
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "커뮤니티 공감", description = "커뮤니티 공감 기능 API")
 public class LikeController {
 
     private final LikeService likeService;
