@@ -1,10 +1,10 @@
-package com.musai.musai.service.user;
+package com.musai.musai.service.preference;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.musai.musai.entity.user.Preference;
-import com.musai.musai.repository.user.PreferenceRepository;
+import com.musai.musai.entity.preference.Preference;
+import com.musai.musai.repository.preference.PreferenceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

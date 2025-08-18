@@ -6,6 +6,7 @@ import com.musai.musai.entity.exhibition.Exhibition;
 import com.musai.musai.service.exhibition.ExhibitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequestMapping("/exhibition")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "전시회", description = "전시회 관련 기능 API")
 public class ExhibitionController {
     private final ExhibitionService exhibitionService;
     private final ObjectMapper objectMapper = new ObjectMapper();
