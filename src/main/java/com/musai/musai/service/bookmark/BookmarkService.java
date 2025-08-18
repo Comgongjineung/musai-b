@@ -9,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,13 @@ public class BookmarkService {
 
     public List<BookmarkDTO> getAllBookmarksByUser(Long userId) {
         return bookmarkRepository.findByUserId(userId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookmarkDTO> getBookmarksByStyle(Long userId, String style) {
+        return bookmarkRepository.findByUserIdAndStyle(userId, style)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());

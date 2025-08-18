@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookmark")
@@ -22,6 +23,13 @@ public class BookmarkController {
     @GetMapping("/readAll/{userId}")
     public ResponseEntity<List<BookmarkDTO>> readBookmarkList(@PathVariable Long userId) {
         List<BookmarkDTO> bookmarks = bookmarkService.getAllBookmarksByUser(userId);
+        return ResponseEntity.ok(bookmarks);
+    }
+
+    @Operation(summary = "예술사조별 북마크 조회", description = "예술사조별로 북마크를 조회합니다.")
+    @GetMapping("/readAll/{userId}/{style}")
+    public ResponseEntity<List<BookmarkDTO>> readBookmarkListByStyle(@PathVariable Long userId, @PathVariable String style) {
+        List<BookmarkDTO> bookmarks = bookmarkService.getBookmarksByStyle(userId, style);
         return ResponseEntity.ok(bookmarks);
     }
 
