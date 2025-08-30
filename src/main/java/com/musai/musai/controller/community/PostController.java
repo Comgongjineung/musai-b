@@ -3,13 +3,17 @@ package com.musai.musai.controller.community;
 import com.musai.musai.dto.community.PostDTO;
 import com.musai.musai.dto.community.PostRequestDTO;
 import com.musai.musai.dto.community.PostUpdateDTO;
+import com.musai.musai.dto.community.ImageUploadResponseDTO;
 import com.musai.musai.service.community.PostService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,6 +34,21 @@ public class PostController {
     public ResponseEntity<PostDTO> createPost(@RequestBody PostRequestDTO postRequestDto) {
         PostDTO createdPost = postService.createPost(postRequestDto);
         return ResponseEntity.ok(createdPost);
+    }
+
+    @Operation(summary = "게시글 이미지 업로드", description = "게시글에 첨부할 이미지를 S3에 업로드하고 URL을 반환받습니다.")
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImageUploadResponseDTO> uploadImage(
+            @Parameter(description = "업로드할 이미지 파일", required = true)
+            @RequestParam("file") MultipartFile file) {
+        
+        ImageUploadResponseDTO response = postService.uploadImage(file);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @Operation(summary = "게시글 삭제", description = "게시글을 삭제합니다.")
