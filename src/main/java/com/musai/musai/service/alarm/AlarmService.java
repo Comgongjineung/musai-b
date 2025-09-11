@@ -226,7 +226,7 @@ public class AlarmService {
                 .build();
     }
 
-    @Scheduled(cron = "0 0 15 * * *")
+    @Scheduled(cron = "0 0 15 * * *", zone = "Asia/Seoul")
     @Transactional
     public void sendDailyExhibitionAlarm() {
         log.info("🚀 매일 오후 3시 전시회 알림 전송 시작");
