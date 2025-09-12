@@ -1,0 +1,46 @@
+name: Deploy Musai Backend to EC2
+
+on:
+  push:
+    branches: [ "main" ]  # main 브랜치 push 시 자동 배포
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}           # EC2 퍼블릭 IP 또는 DNS
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}        # gha_deploy_key 개인키
+          script: |
+            cd musai-b
+            git fetch origin
+            git checkout main
+            git pull origin main
+
+            # 기존 컨테이너/이미지 제거 (에러 무시)
+            docker stop musai-backend || true
+            docker rm musai-backend || true
+            docker rmi musai-backend || true
+
+            # 빌드
+            ./gradlew clean build
+
+            # 도커 이미지 빌드
+            docker build -t musai-backend .
+
+            # 도커 컨테이너 실행
+            docker run -d \
+              --name musai-backend \
+              --network musai-network \
+              -p 8080:8080 \
+              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+              -e AWS_DEFAULT_REGION=ap-northeast-2 \
+              musai-backend
