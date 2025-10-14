@@ -64,6 +64,38 @@ public class UserService {
             });
     }
 
+    @Transactional
+    public User findOrCreateUserFromApple(String email, String sub, String nickname, String profileImage) {
+        String oauthProvider = "apple";
+        String oauthId = sub;
+
+        return userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId)
+                .orElseGet(() -> {
+                    User user = userRepository.save(User.builder()
+                            .oauthProvider(oauthProvider)
+                            .oauthId(oauthId)
+                            .email(email)
+                            .nickname(nickname != null ? nickname : "AppleUser")
+                            .profileImage(profileImage)
+                            .build());
+
+                    settingRepository.save(Setting.builder()
+                            .userId(user.getUserId())
+                            .defaultDiffiiculty(DefaultDifficulty.NORMAL)
+                            .allowCalarm(true)
+                            .allowRalarm(true)
+                            .build());
+
+                    String defaultPreferences = createDefaultPreferencesJson();
+                    preferenceRepository.save(Preference.builder()
+                            .userId(user.getUserId())
+                            .preferences(defaultPreferences)
+                            .build());
+
+                    return user;
+                });
+    }
+
     private String createDefaultPreferencesJson() {
         return "{\"고대 미술\":0,\"중세 미술\":0,\"르네상스\":0,\"바로크\":0,\"로코코\":0,\"신고전주의\":0,\"낭만주의\":0,\"사실주의\":0,\"인상주의\":0,\"후기 인상주의\":0,\"아르누보\":0,\"야수파 & 표현주의\":0,\"입체주의\":0,\"미래주의 & 구성주의\":0,\"다다 & 초현실주의\":0,\"추상표현주의\":0,\"팝아트\":0,\"미니멀리즘 & 현대미술\":0,\"동아시아\":0,\"동남아시아\":0,\"남아시아\":0,\"중앙아시아\":0,\"서아시아 / 중동\":0}";
     }
