@@ -24,7 +24,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/google", "/recog/ping", // ✅ 인증 없이 허용할 API들
+                                "/auth/**", "/recog/ping", // ✅ 인증 없이 허용할 API들
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html" // ✅ Swagger 경로 허용
                         ).permitAll() // 예외적으로 허용
                         .anyRequest().authenticated() // 나머지는 전부 jwt 인증 필요
