@@ -21,6 +21,12 @@ public class UserBlockService {
     private final UserBlockRepository userBlockRepository;
     private final UserRepository userRepository;
 
+    public Long getUserIdByEmail(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자(" + userEmail + ")를 찾을 수 없습니다."));
+        return user.getUserId();
+    }
+
     @Transactional
     public UserBlockResponse blockUserByEmail(String userEmail, UserBlockRequest request) {
         User blocker = userRepository.findByEmail(userEmail)
