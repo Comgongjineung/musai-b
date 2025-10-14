@@ -3,29 +3,25 @@ package com.musai.musai.controller.auth;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.musai.musai.entity.user.User;
 import com.musai.musai.jwt.JwtTokenProvider;
 import com.musai.musai.service.user.UserService;
-import com.musai.musai.util.AppleClient;
-import com.musai.musai.util.AppleJwtUtil;
-import com.musai.musai.util.AppleTokenResponse;
-import com.musai.musai.util.AppleUserInfo;
+import com.musai.musai.util.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -50,6 +46,7 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> body) {
         String idTokenString = body.get("idToken");
+        log.info("[GoogleLogin] 요청 수신 - idToken: {}", idTokenString != null ? "받음" : "없음");
 
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
@@ -60,24 +57,25 @@ public class AuthController {
 
             GoogleIdToken idToken = verifier.verify(idTokenString);
             if (idToken == null) {
+                log.warn("[GoogleLogin] 유효하지 않은 구글 토큰");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Google token");
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
+            log.debug("[GoogleLogin] 구글 로그인 성공 - email: {}", payload.getEmail());
 
-            // 유저 조회 또는 생성
             User user = userService.findOrCreateUserFromGoogle(payload);
-
-            // JWT 토큰 생성
             String accessToken = jwtTokenProvider.generateToken(user);
 
             Map<String, Object> response = new HashMap<>();
             response.put("accessToken", accessToken);
             response.put("user", user);
 
+            log.info("[GoogleLogin] 로그인 성공 - userId: {}", user.getUserId());
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            log.error("[GoogleLogin] 예외 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed");
         }
     }
@@ -86,21 +84,25 @@ public class AuthController {
     @PostMapping("/apple")
     public ResponseEntity<?> appleLogin(@RequestBody Map<String, String> body) {
         String code = body.get("code");
+        log.info("[AppleLogin] 요청 수신 - code: {}", code);
 
         try {
             // 1️⃣ code → access_token 교환
             AppleTokenResponse tokenResponse = appleClient.getToken(code);
+            log.debug("[AppleLogin] 애플 토큰 응답: {}", tokenResponse);
 
-            // 2️⃣ id_token 디코드 및 검증
+            // 2️⃣ id_token 검증
             AppleUserInfo userInfo = appleJwtUtil.verifyIdentityToken(tokenResponse.getIdToken());
+            log.debug("[AppleLogin] 사용자 정보: {}", userInfo);
 
-            // 3️⃣ DB에 유저 생성 or 조회
+            // 3️⃣ DB 유저 조회/생성
             User user = userService.findOrCreateUserFromApple(
                     userInfo.getEmail(),
                     userInfo.getSub(),
                     userInfo.getName(),
                     null
             );
+            log.info("[AppleLogin] 유저 처리 완료 - userId: {}, email: {}", user.getUserId(), user.getEmail());
 
             // 4️⃣ JWT 발급
             String accessToken = jwtTokenProvider.generateToken(user);
@@ -109,10 +111,11 @@ public class AuthController {
             response.put("accessToken", accessToken);
             response.put("user", user);
 
+            log.info("[AppleLogin] 로그인 성공 ✅ - userId: {}", user.getUserId());
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("[AppleLogin] 예외 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Apple login failed");
         }
     }
