@@ -48,7 +48,7 @@ public class RecogService {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                FAST_API_URL,
+                LOCAL_API_URL,
                 requestEntity,
                 Map.class
         );

@@ -11,5 +11,4 @@ public class MusaiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MusaiApplication.class, args);
 	}
-
 }
