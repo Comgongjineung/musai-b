@@ -19,4 +19,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     void deleteByPostId(Long postId);
     void deleteByPostIdAndParentCommentIdIsNotNull(Long postId);
     void deleteByPostIdAndParentCommentIdIsNull(Long postId);
+
+    List<Comment> findByPostIdAndUserIdNotIn(Long postId, List<Long> blockedUserIds);
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final AlarmService alarmService;
+    private final UserBlockService userBlockService;
+
 
     public List<CommentDTO> getAllCommentByPostId(Long postId) {
         return commentRepository.findByPostId(postId)
@@ -42,13 +45,21 @@ public class CommentService {
 
     // 페이징 + 계층형 댓글 조회 (통합)
     public Page<CommentDTO> getHierarchicalCommentsWithPaging(Long postId, Pageable pageable) {
-        List<Comment> allComments = commentRepository.findByPostId(postId);
-        
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Long> blockedUserIds = userBlockService.getBlockedUsersByEmail(userEmail);
+
+        List<Comment> allComments;
+        if (blockedUserIds.isEmpty()) {
+            allComments = commentRepository.findByPostId(postId);
+        } else {
+            allComments = commentRepository.findByPostIdAndUserIdNotIn(postId, blockedUserIds);
+        }
+
         // 댓글을 부모-자식 관계로 그룹화
         Map<Long, List<Comment>> parentChildMap = allComments.stream()
                 .filter(comment -> comment.getParentCommentId() != null)
                 .collect(Collectors.groupingBy(Comment::getParentCommentId));
-        
+
         // 최상위 댓글만 계층형으로 구성
         List<CommentDTO> hierarchicalComments = allComments.stream()
                 .filter(comment -> comment.getParentCommentId() == null)
@@ -58,18 +69,18 @@ public class CommentService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-        
+
         // 페이징 처리
         int totalElements = hierarchicalComments.size();
         int pageSize = pageable.getPageSize();
         int pageNumber = pageable.getPageNumber();
         int start = pageNumber * pageSize;
         int end = Math.min(start + pageSize, totalElements);
-        
-        List<CommentDTO> pageContent = start < totalElements ? 
-                hierarchicalComments.subList(start, end) : 
+
+        List<CommentDTO> pageContent = start < totalElements ?
+                hierarchicalComments.subList(start, end) :
                 new ArrayList<>();
-        
+
         return new PageImpl<>(pageContent, pageable, totalElements);
     }
 

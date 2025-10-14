@@ -9,4 +9,7 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByUserId(Long userId);
     List<Post> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(String titleKeyword, String contentKeyword);
+    List<Post> findByUserIdNotInOrderByCreatedAtDesc(List<Long> blockedUserIds);
+    List<Post> findByUserIdNotInAndTitleContainingIgnoreCaseOrUserIdNotInAndContentContainingIgnoreCase(List<Long> blockedUserIdsForTitle, String titleKeyword, List<Long> blockedUserIdsForContent, String contentKeyword);
+
 }
