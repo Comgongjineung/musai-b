@@ -9,6 +9,7 @@ import com.musai.musai.repository.community.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +35,7 @@ public class PostService {
     private final LikeService likeService;
     private final CommentService commentService;
     private final S3Client s3Client;
+    private final UserBlockService userBlockService;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -71,7 +74,18 @@ public class PostService {
 
     //전체 게시글 조회
     public List<PostDTO> getAllPosts(){
-        List<Post> posts = postRepository.findAll();
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Long> blockedUserIds = userBlockService.getBlockedUsersByEmail(userEmail);
+
+        List<Post> posts;
+        if (blockedUserIds.isEmpty()) {
+            posts = postRepository.findByUserIdNotInOrderByCreatedAtDesc(Collections.emptyList());
+        } else {
+            posts = postRepository.findByUserIdNotInOrderByCreatedAtDesc(blockedUserIds);
+        }
+
+
+//        List<Post> posts = postRepository.findAll();
         return posts.stream()
                 .map(post -> {
                     Long likeCount = likeService.getLikeCountByPostId(post.getPostId());
@@ -109,7 +123,17 @@ public class PostService {
 
     //게시물 검색
     public List<PostDTO> searchPosts(String keyword) {
-        List<Post> posts = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword);
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Long> blockedUserIds = userBlockService.getBlockedUsersByEmail(userEmail);
+
+        List<Post> posts;
+        if (blockedUserIds.isEmpty()) {
+            posts = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword);
+        } else {
+            posts = postRepository.findByUserIdNotInAndTitleContainingIgnoreCaseOrUserIdNotInAndContentContainingIgnoreCase(
+                    blockedUserIds, keyword, blockedUserIds, keyword);
+        }
+
         return posts.stream()
                 .map(post -> {
                     Long likeCount = likeService.getLikeCountByPostId(post.getPostId());
