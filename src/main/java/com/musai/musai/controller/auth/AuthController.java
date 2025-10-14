@@ -6,6 +6,10 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.musai.musai.entity.user.User;
 import com.musai.musai.jwt.JwtTokenProvider;
 import com.musai.musai.service.user.UserService;
+import com.musai.musai.util.AppleClient;
+import com.musai.musai.util.AppleJwtUtil;
+import com.musai.musai.util.AppleTokenResponse;
+import com.musai.musai.util.AppleUserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,9 @@ import java.util.Map;
 public class AuthController {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+
+    private final AppleClient appleClient;
+    private final AppleJwtUtil appleJwtUtil;
 
     @Value("${google.client-id.android}")
     private String androidClientId;
@@ -72,6 +79,41 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Login failed");
+        }
+    }
+
+    @Operation(summary = "애플 회원가입", description = "애플 계정으로 로그인 및 회원가입을 진행합니다.")
+    @PostMapping("/apple")
+    public ResponseEntity<?> appleLogin(@RequestBody Map<String, String> body) {
+        String code = body.get("code");
+
+        try {
+            // 1️⃣ code → access_token 교환
+            AppleTokenResponse tokenResponse = appleClient.getToken(code);
+
+            // 2️⃣ id_token 디코드 및 검증
+            AppleUserInfo userInfo = appleJwtUtil.verifyIdentityToken(tokenResponse.getIdToken());
+
+            // 3️⃣ DB에 유저 생성 or 조회
+            User user = userService.findOrCreateUserFromApple(
+                    userInfo.getEmail(),
+                    userInfo.getSub(),
+                    userInfo.getName(),
+                    null
+            );
+
+            // 4️⃣ JWT 발급
+            String accessToken = jwtTokenProvider.generateToken(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("accessToken", accessToken);
+            response.put("user", user);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Apple login failed");
         }
     }
 }
