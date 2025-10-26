@@ -19,7 +19,6 @@ import com.musai.musai.repository.community.PostRepository;
 import com.musai.musai.repository.community.UserBlockRepository;
 import com.musai.musai.repository.community.UserReportRepository;
 import com.musai.musai.repository.preference.PreferenceRepository;
-import com.musai.musai.repository.preference.RecommendRepository;
 import com.musai.musai.repository.ticket.TicketRepository;
 import com.musai.musai.repository.user.SettingRepository;
 import com.musai.musai.repository.user.UserRepository;
@@ -47,7 +46,6 @@ public class UserService {
     private final BookmarkRepository bookmarkRepository;
     private final AlarmRepository alarmRepository;
     private final TokenRepository tokenRepository;
-    private final RecommendRepository recommendRepository;
 
     @Transactional
     public User findOrCreateUserFromGoogle(GoogleIdToken.Payload payload) {
@@ -199,7 +197,6 @@ public class UserService {
         }
 
         tokenRepository.findById(userId).ifPresent(tokenRepository::delete);
-        recommendRepository.findById(userId).ifPresent(recommendRepository::delete);
 
         userRepository.delete(user);
         return toUserDTO(user);
