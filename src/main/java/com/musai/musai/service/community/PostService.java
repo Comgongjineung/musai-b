@@ -73,25 +73,22 @@ public class PostService {
     }
 
     //전체 게시글 조회
-    public List<PostDTO> getAllPosts(){
+    public List<PostDTO> getAllPosts() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<Long> blockedUserIds = userBlockService.getBlockedUsersByEmail(userEmail);
 
+        List<Long> blockedUserIds = userBlockService.getBlockedUsersByEmail(userEmail);
         List<Post> posts;
+
         if (blockedUserIds.isEmpty()) {
-            posts = postRepository.findByUserIdNotInOrderByCreatedAtDesc(Collections.emptyList());
+            //차단한 사람이 없으면 전체 게시글 조회
+            posts = postRepository.findAllByOrderByCreatedAtDesc();
         } else {
+            //차단한 사용자 제외하고 조회
             posts = postRepository.findByUserIdNotInOrderByCreatedAtDesc(blockedUserIds);
         }
 
-
-//        List<Post> posts = postRepository.findAll();
         return posts.stream()
-                .map(post -> {
-                    Long likeCount = likeService.getLikeCountByPostId(post.getPostId());
-                    Long commentCount = commentService.getCommentCountByPostId(post.getPostId());
-                    return PostDTO.fromEntity(post, likeCount, commentCount);
-                })
+                .map(PostDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -174,11 +171,11 @@ public class PostService {
                     .contentType(contentType)
                     .build();
 
-            PutObjectResponse response = s3Client.putObject(putObjectRequest, 
+            PutObjectResponse response = s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
             if (response.sdkHttpResponse().isSuccessful()) {
-                String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", 
+                String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s",
                         bucketName, region, fileName);
 
                 log.info("게시글 이미지 업로드 성공: {}", imageUrl);
