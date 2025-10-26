@@ -9,9 +9,18 @@ import com.musai.musai.entity.user.DefaultDifficulty;
 import com.musai.musai.entity.preference.Preference;
 import com.musai.musai.entity.user.Setting;
 import com.musai.musai.entity.user.User;
+import com.musai.musai.repository.alarm.AlarmRepository;
+import com.musai.musai.repository.alarm.TokenRepository;
+import com.musai.musai.repository.bookmark.BookmarkRepository;
 import com.musai.musai.repository.community.CommentRepository;
+import com.musai.musai.repository.community.LikeRepository;
+import com.musai.musai.repository.community.PostReportRepository;
 import com.musai.musai.repository.community.PostRepository;
+import com.musai.musai.repository.community.UserBlockRepository;
+import com.musai.musai.repository.community.UserReportRepository;
 import com.musai.musai.repository.preference.PreferenceRepository;
+import com.musai.musai.repository.preference.RecommendRepository;
+import com.musai.musai.repository.ticket.TicketRepository;
 import com.musai.musai.repository.user.SettingRepository;
 import com.musai.musai.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +39,15 @@ public class UserService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PreferenceRepository preferenceRepository;
+    private final LikeRepository likeRepository;
+    private final UserBlockRepository userBlockRepository;
+    private final UserReportRepository userReportRepository;
+    private final PostReportRepository postReportRepository;
+    private final TicketRepository ticketRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final AlarmRepository alarmRepository;
+    private final TokenRepository tokenRepository;
+    private final RecommendRepository recommendRepository;
 
     @Transactional
     public User findOrCreateUserFromGoogle(GoogleIdToken.Payload payload) {
@@ -143,9 +161,45 @@ public class UserService {
         return toUserDTO(user);
     }
 
+    @Transactional
     public UserDTO deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저가 없습니다."));
+
+        List<Post> userPosts = postRepository.findByUserId(userId);
+        for (Post post : userPosts) {
+            likeRepository.deleteByPostId(post.getPostId());
+            commentRepository.deleteByPostId(post.getPostId());
+        }
+        postRepository.deleteAll(userPosts);
+
+        List<Comment> userComments = commentRepository.findByUserId(userId);
+        commentRepository.deleteAll(userComments);
+
+        likeRepository.deleteByUserId(userId);
+
+        userBlockRepository.deleteByBlockerIdOrBlockedUserId(userId, userId);
+        userReportRepository.deleteByReporterIdOrReportedUserId(userId, userId);
+        postReportRepository.deleteByReporterId(userId);
+
+        ticketRepository.deleteByUserId(userId);
+        List<com.musai.musai.entity.bookmark.Bookmark> bookmarks = bookmarkRepository.findByUserId(userId);
+        bookmarkRepository.deleteAll(bookmarks);
+
+        alarmRepository.deleteByUserId(userId);
+
+        Preference preference = preferenceRepository.findById(userId).orElse(null);
+        if (preference != null) {
+            preferenceRepository.delete(preference);
+        }
+
+        Setting setting = settingRepository.findById(userId).orElse(null);
+        if (setting != null) {
+            settingRepository.delete(setting);
+        }
+
+        tokenRepository.findById(userId).ifPresent(tokenRepository::delete);
+        recommendRepository.findById(userId).ifPresent(recommendRepository::delete);
 
         userRepository.delete(user);
         return toUserDTO(user);
